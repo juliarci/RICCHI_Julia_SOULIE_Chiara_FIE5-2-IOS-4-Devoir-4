@@ -1,65 +1,65 @@
 ---
-title: "FIE4-2-IMTNS-2-Devoir-3"
-author: "Adrien Wartelle"
-date: "2026-01-11"
-output: html_notebook # html_document
+title: "FIE5-2-IOS-4-Devoir-4"
+author: "Julia Ricchi & Chiara Soulié"
+date: "2026-05-14"
+output: html_notebook
 editor_options: 
   markdown: 
     wrap: sentence
 ---
 
-# Etude de cas sur l’analyse et la mesure de performance des Flux de Patients
+# Étude de cas : Analyse et modélisation des flux de patients en urologie
 
 ## Introduction
 
-Ce travail porte sur l'analyse des flux de patients sur un plateau mutualisé de consultations externes d'un hôpital.
-L'objectif est de réaliser un diagnostic objectif de la performance organisationnelle du service d'urologie en s'appuyant sur les méthodes et outils d'analyse de flux vus précédemment ainsi que sur le langage R à travers l’environnement de RStudio.
-La figure ci-dessous illustre les principaux flux ainsi que le Plan du plateau de consultations (voir fichiers PlanConsultations.pdf et ZoomURO.pdf consultables à partir <http://bit.ly/PlansCHUTlse>)
+Ce rapport s'inscrit dans le cadre de l'analyse du fonctionnement d'un plateau mutualisé de consultations externes au sein d'un service hospitalier d'urologie.
+L'objectif principal est de construire une modélisation réaliste et simulable du service, en nous appuyant sur des données de traçabilité patient collectées via des étiquettes électroniques de type RFID le 12/11/2015.
+Ces données, fusionnées avec les informations des systèmes d'information administratifs et médicaux, constituent le fichier de log sur lequel repose l'ensemble de notre analyse.
 
-<!--<img src="illustrations/PlanUro.png" alt="Plan du plateau de consultations" width="600"/>-->
+La figure ci-dessous présente le plan du plateau de consultations (voir fichiers PlanConsultations.pdf et ZoomURO.pdf disponibles sur <http://bit.ly/PlansCHUTlse>).
 
-![Plan du plateau de consultations](illustrations/PlanUro.png "Plan du plateau de consultations") Afin de collecter des données sur les parcours suivis, les patients qui se sont présentés le 12/11/2015 ont été équipés d’une étiquette électronique (type RFID) qui a permis de tracer leurs parcours dans le plateau de consultation.
-Les données collectées ont été fusionnées avec les données des outils de gestion des dossiers administratifs et médicaux utilisés par les personnels.
-L'ensemble est disponible sous la forme d’un fichier log, illustré par le tableau suivant (voir annexe LogPatientUROseul_12112015.xlsx consultable à partir <http://bit.ly/logPatients>).
+![Plan du plateau de consultations](illustrations/PlanUro.png "Plan du plateau de consultations")
 
-<!--<img src="illustrations/TableauLogPatients.png" alt="Vue du tableau de données de log patient" width="600"/>-->
+Les colonnes du fichier de données sont les suivantes :
 
-![*Vue du tableau de données de log patient*](illustrations/TableauLogPatients.png "Vue du tableau de données de log patient")
+- *ID* (Col A) : Identifiant anonymisé du patient
 
-Les différentes de ce tableau de données sont :
+- *Timestamp start* (Col B) : Horodatage d'entrée dans une zone ou salle
 
-- *ID* (Col A) : Identifiant du patient
+- *Timestamp end* (Col C) : Horodatage de sortie de la zone ou salle
 
-- *Timestamp start* (Col B) : horodatage entrée de zone ou salle
+- *Activity_MACRO* (Col D) : Catégorie d'activité (ex. Accueil, Consultation…)
 
-- *Timestamp end* (Col C) : horodatage sortie de zone ou salle
+- *Activity_DETAILS* (Col E) : Détail de l'activité et indice de salle (i)
 
-- *Activity_MACRO* (Col D) : Type d'activité
+- *Ress.Humaines* (Col F) : Ressources humaines mobilisées (personnel administratif ou soignant)
 
-- *Activity_DETAILS* (Col E) : Activité suivie et indice salle (i)
+- *distance parcourues* (Col G) : Distance cumulée parcourue par le patient
 
-- *Ress.Humaines* (Col F) : Ressources humaines administratives ou soignantes intervenant dans l'activité
+- *début/fin opX* (Col H à O) : Horodatages de début et de fin pour chaque opération de prise en charge (jusqu'à 4 opérations par activité)
 
-- *distance parcourues* (Col G) : Distance parcourue cumulée
+Le tableau de données est consultable ici : <http://bit.ly/logPatients>
 
-- *début/fin opX* (Col H à O) : horodatage début/fin de chaque opération de prise en charge par une ressource administrative ou soignante (maxi 4 opérations par activité).
+![*Extrait du tableau de données de log patient*](illustrations/TableauLogPatients.png "Vue du tableau de données de log patient")
 
-## **Devoir 4 - Travail demandé** : Modélisation finale
+## **Devoir 4 — Travail demandé** : Modélisation finale
 
-Ce travail, qui peut-être effectué en binôme, est à rendre pour le **14/05/2026** au format Rmd ou R (+pdf si besoin) avec pour titre "NOM_Prenom_FI54-2-IOS-4-Devoir-4.\*" et fera l'objet d'une soutenance à cette même date.
+Ce devoir, réalisé en binôme, est à rendre pour le **14/05/2026** au format Rmd (+ PDF si nécessaire), avec pour titre `NOM_Prenom_FIE5-2-IOS-4-Devoir-4.*`.
+Il fera l'objet d'une soutenance à cette même date.
 
-Toujours dans la continuité des précédant devoirs, l'objectif de ce dernier devoir est de proposer une modélisation simulable finale de notre service d'urologie en 3 étapes :
+L'objectif de ce dernier devoir est de produire une modélisation simulable complète du service d'urologie, articulée en trois étapes :
 
 1)  Modélisation des parcours patient par *Process Mining*
 
-2)  Simulation du service d'accueil sous Anylogic
+2)  Simulation du service d'accueil sous AnyLogic
 
-3)  Simulation du service d'urologie
+3)  Simulation globale du service d'urologie
 
 ```{r include=FALSE}
 library(tidyverse)
 library(data.table)
 library(readxl)
+library(purrr) 
 
 load("local_data/trace_example_1.RData")
 load("local_data/trace_example_final.RData")
@@ -68,10 +68,10 @@ devoir3_data_accueil = read_csv2("local_data/devoir3_data_accueil.csv")
 
 ### Question 1) Modélisation des parcours patient par *Process Mining* (/2.5)
 
-Pour cette premier question, il vous est demandé de modéliser les parcours patient selon un modèle de chaîne de Markov.
-On cherche à modéliser uniquement les étapes impliquant un agent de soins, c'est-à-dire qui utilise des ressources du service (contrairement aux étapes de déplacement et d'attente).
+L'objectif de cette question est de modéliser les parcours des patients sous la forme d'une **chaîne de Markov**.
+Nous nous concentrons uniquement sur les étapes impliquant une ressource soignante ou administrative, en excluant les déplacements et les temps d'attente passifs.
 
-Par exemple pour le patient d'ID 10, on a 9 étapes :
+Pour illustrer la démarche, prenons l'exemple du patient d'identifiant 10, dont le parcours comporte 9 opérations :
 
 ```{r}
 trace_example_final %>%
@@ -79,8 +79,8 @@ trace_example_final %>%
   filter(ID == 10)
 ```
 
-Pour éviter toute difficulté liée à la complexité des opérations, on va regrouper les différents temps selon l'activité macro et le type d'acteur.
-Par exemple, pour le patient d'ID 10, on a les temps "strictes" suivant :
+Afin de simplifier l'analyse, nous regroupons les opérations par **activité macro** et par **type d'acteur**.
+Pour le patient 10, cela donne les temps "stricts" suivants (sans encore tenir compte des temps morts des acteurs) :
 
 ```{r}
 trace_example_final_b <- trace_example_final %>%
@@ -93,29 +93,36 @@ trace_example_final_b <- trace_example_final %>%
          ACTIVITY_MACRO = ifelse(str_detect(CURRENT_LOCATION,"Accueil"),
                                  "Accueil",ACTIVITY_MACRO),
          ACTIVITY_MACRO = ifelse(str_detect(CURRENT_LOCATION,"Sortie"),
-                                 "Sortie",ACTIVITY_MACRO), # à continuer dans le cas général et à faire aussi par type d'agent de soins
+                                 "Sortie",ACTIVITY_MACRO),
          )
   
 trace_example_final_b %>%
-  group_by(ACTIVITY_MACRO,WITH_1) %>% # Attention, il faudra considérer le type d'acteur de manière agrégée
-  summarize(time_in_minutes = sum(as.double(DATETIME_END) - as.double(DATETIME_BEGIN)) / 60) # Attention, il faudra calculer l'Effective Process Time
+  group_by(ACTIVITY_MACRO,WITH_1) %>%
+  summarize(time_in_minutes = sum(as.double(DATETIME_END) - as.double(DATETIME_BEGIN)) / 60)
 ```
 
-Attention ces temps ne sont pas tout à fait correcte pour notre type de modélisation, il faut prendre en compte des *Effective Time Process* en prenant en compte aussi les temps morts des acteurs (cf Devoir 3)
+> **Remarque importante** : ces temps bruts ne suffisent pas pour paramétrer correctement notre modèle.
+> Il est nécessaire de calculer l'***Effective Process Time*** (EPT) de chaque acteur, en intégrant les temps morts survenus entre deux opérations successives d'un même acteur (cf. Devoir 3).
 
-Pour vous aidez à parvenir à cette modélisation, une méthodologie vous est proposé :
+La méthodologie adoptée pour construire le modèle de Markov est la suivante :
 
-- Commencez par une modélisation macro des activités générales simplement en regardant la probabilité d'occurence de celles-ci (en fonction aussi de si le patient est prioritaire ou non)
+**Étape 1 — Modélisation macro des séquences d'activités**
 
-  - Dans le cas de notre patient ID 10, on a en 4 : Accueil, Consultation (Même si c'est coupé en 2), Examen, Sortie
+Nous calculons d'abord la fréquence d'occurrence de chaque séquence d'activités macro, en distinguant les patients prioritaires des patients standard.
+Pour le patient 10, la séquence observée est : Accueil → Consultation → Examen → Sortie (4 étapes).
 
-  - Gardez l'ordre le plus fréquemment des activités observées (Accueil, Consultation, Examen ..., Sortie)
+**Étape 2 — Modélisation des ressources au sein de chaque activité**
 
-- Dans chacune des activités macro, modélisez la probabilité de faire appel à chaque type d'acteur et dans le cas où un doit intervenir modéliser *l'Effective Time Process* nécessaire avec une loi gamma (en fonction aussi de si le patient est prioritaire ou non)
+Pour chaque activité macro, nous estimons la probabilité qu'un acteur donné intervienne, puis nous modélisons la durée de son intervention par une **loi gamma**, paramétrée séparément pour les patients prioritaires et standard.
+Le patient 10 mobilise 6 combinaisons activité / acteur distinctes.
 
-  - Dans le cas de notre patient ID 10, on fait appel à 6 combinaisons activité / agents différents
+**Étape 3 — Validation par comparaison avec un modèle plus détaillé**
 
-- Comparer ce modèle simplifié construit avec la réalité observée et aussi avec un modèle plus détaillé qui n'agrégerait pas les différentes étapes et temps d'acteurs
+Nous comparons notre modèle simplifié (agrégé par activité macro) à un modèle plus granulaire (par salle individuelle), afin d'évaluer le biais introduit par l'agrégation.
+
+---
+
+#### 1.a — Préparation des données et calcul de l'EPT
 
 ```{r}
 library(tidyverse)
@@ -177,9 +184,14 @@ ops <- patients %>%
 ops %>%
   filter(ID == 10) %>%
   dplyr::select(ACTIVITY_MACRO, WITH_1, ACTOR_TYPE, DATETIME_BEGIN, DATETIME_END, EPT_min)
-
-
 ```
+
+Le calcul de l'EPT consiste à déterminer, pour chaque opération d'un acteur, le temps effectivement consacré au patient en tenant compte de l'éventuelle disponibilité de l'acteur depuis la fin de l'opération précédente.
+Ainsi, si un acteur finit une prise en charge à 9h05 et commence la suivante à 9h10, l'EPT de la seconde opération ne démarre pas à 9h00 (heure d'entrée du patient) mais à 9h05, ce qui évite de sur-estimer les temps de service.
+
+---
+
+#### 1.b — Construction de la chaîne de Markov macro
 
 ```{r}
 etats <- c("Accueil", "Consultation", "Examen", "Sortie")
@@ -214,19 +226,24 @@ for (seq in sequences$sequence) {
 trans_prob <- trans_count / rowSums(trans_count)
 trans_prob[is.nan(trans_prob)] <- 0
 
-cat("=== Matrice de transition ===\n")
+cat("=== Matrice de transition — Chaîne de Markov ===\n")
 print(round(trans_prob, 3))
 ```
 
-La séquence la plus fréquente est Accueil → Consultation → Sortie (44.1% des patients), ce qui correspond aux patients ne nécessitant pas d'examen complémentaire.
-La deuxième séquence la plus fréquente Accueil → Consultation → Examen → Consultation → Sortie (22.1%) illustre le circuit typique d'un patient nécessitant un examen puis un retour en consultation pour interprétation des résultats.
-La matrice de transition révèle plusieurs points importants.
-Tous les patients passent par l'Accueil avant d'aller en Consultation (86.8%) ou directement en Examen (13.2%), ce qui correspond aux patients orientés directement vers un examen sans consultation préalable.
-Depuis la Consultation, 58.3% des patients terminent leur parcours en Sortie tandis que 41.7% sont envoyés en Examen.
-Depuis l'Examen, 75.5% des patients retournent en Consultation — probablement pour que le médecin interprète les résultats — et seulement 24.5% vont directement en Sortie.
+La séquence dominante est **Accueil → Consultation → Sortie**, représentant 44,1 % des patients.
+Il s'agit du parcours "simple" pour les patients dont la consultation ne nécessite pas d'examen complémentaire.
+La deuxième séquence la plus fréquente (**Accueil → Consultation → Examen → Consultation → Sortie**, 22,1 %) correspond au circuit classique d'un patient orienté vers un examen, suivi d'un retour en consultation pour l'interprétation des résultats.
+
+La matrice de transition met en évidence la structure fortement séquentielle du parcours :
+
+- Depuis l'Accueil, la grande majorité des patients se dirigent vers la Consultation (86,8 %), les 13,2 % restants étant orientés directement vers l'Examen.
+- Depuis la Consultation, environ 58 % des patients sortent du service, tandis que 42 % sont envoyés en Examen.
+- Depuis l'Examen, 75,5 % des patients retournent en Consultation (pour l'interprétation des résultats) et 24,5 % quittent directement le service.
+
+Il n'existe pas de transition de retour vers l'Accueil, ce qui confirme que cet état est un point d'entrée unique.
+La Sortie est un **état absorbant** : aucun patient ne repart vers une autre activité une fois sorti.
 
 ```{r}
-
 as.data.frame(trans_prob) %>%
   rownames_to_column("De") %>%
   pivot_longer(-De, names_to = "Vers", values_to = "Prob") %>%
@@ -235,15 +252,20 @@ as.data.frame(trans_prob) %>%
   geom_tile(color = "white", linewidth = 1) +
   geom_text(aes(label = paste0(round(Prob * 100, 1), "%")),
             color = "white", fontface = "bold", size = 5) +
-  scale_fill_gradient(low = "#42A5F5", high = "#0D47A1") +
+  scale_fill_gradient(low = "#80CBC4", high = "#00695C") +
   labs(title = "Matrice de transition — Chaîne de Markov MACRO",
-       x = "Activité suivante", y = "Activité courante") +
+       x = "Activité suivante", y = "Activité courante",
+       fill = "Probabilité") +
   theme_minimal(base_size = 13) +
   theme(panel.grid = element_blank())
 ```
 
-La heatmap confirme visuellement la structure séquentielle du parcours patient : il n'existe pas de retour vers l'Accueil depuis une autre activité, et la Sortie est bien un état absorbant.
-Les probabilités de transition les plus fortes sont Accueil → Consultation (86.8%) et Examen → Consultation (75.5%), ce qui souligne le rôle central de la Consultation dans le parcours urologique.
+La heatmap confirme la lecture de la matrice : les transitions les plus probables (teinte foncée) sont **Accueil → Consultation** et **Examen → Consultation**, ce qui souligne le rôle pivot de la Consultation dans l'organisation du service.
+L'absence de case colorée sur la ligne "Sortie" confirme bien son caractère absorbant.
+
+---
+
+#### 1.c — Probabilités de sollicitation des ressources
 
 ```{r}
 nb_passages <- sequences %>%
@@ -270,21 +292,25 @@ ggplot(proba_res, aes(x = ACTOR_TYPE, y = prob, fill = PRIO)) +
             position = position_dodge(0.9), vjust = -0.4, size = 3) +
   facet_wrap(~ ACTIVITY_MACRO, scales = "free_x") +
   scale_fill_manual(values = c("Prioritaire" = "#E53935", "Standard" = "#1565C0")) +
-  labs(title = "Probabilité de sollicitation des ressources",
-       x = "Type de ressource", y = "Probabilité", fill = "Type patient") +
+  labs(title = "Probabilité de sollicitation des ressources par activité",
+       subtitle = "Comparaison patients prioritaires vs standard",
+       x = "Type de ressource", y = "Probabilité d'intervention", fill = "Type patient") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
 ```
 
-L'analyse des probabilités de sollicitation révèle des différences notables entre activités et types de patients.
-En Accueil, tous les patients (100%) voient un Agent_Accueil, ce qui est attendu.
-En Consultation, le MED est sollicité dans environ 57-61% des passages, l'AS dans 56-57% des cas, tandis que l'IDE (7-14%) et l'IDE_Annonce (7-18%) interviennent plus rarement, uniquement pour certains actes spécifiques.
-Les probabilités sont globalement similaires entre patients prioritaires et standards en Consultation, ce qui suggère que la priorité concerne davantage l'ordre de passage que la nature des actes réalisés.
-En Examen, l'IDE est la ressource la plus sollicitée (50-73% des passages), suivie de l'AS (50-58%) et du MED (38-61%).
-La variabilité plus importante entre prioritaires et standards en Examen peut s'expliquer par le faible nombre de patients prioritaires ayant eu un examen (n=10), ce qui rend les estimations moins stables.
+Les probabilités d'intervention révèlent une structure cohérente avec l'organisation du service :
+
+- À l'**Accueil**, l'Agent_Accueil intervient systématiquement (100 % des passages), ce qui est logique puisqu'il s'agit du point d'entrée obligatoire.
+- En **Consultation**, le MED est sollicité dans 57 à 61 % des passages, l'AS dans 56 à 57 % des cas. L'IDE et l'IDE_Annonce interviennent plus rarement (7 à 18 %), réservés à des actes spécifiques (soins infirmiers, annonces de diagnostic).
+- Les taux d'intervention sont proches entre patients prioritaires et standards en Consultation, ce qui suggère que la priorité influe davantage sur *l'ordre de passage* que sur la *nature des actes* réalisés.
+- En **Examen**, l'IDE est la ressource la plus mobilisée (50 à 73 % des passages), devant l'AS (50 à 58 %) et le MED (38 à 61 %). La variabilité plus marquée chez les patients prioritaires s'explique probablement par le faible effectif de ce sous-groupe dans cette activité (n ≈ 10), rendant les estimations moins robustes.
+
+---
+
+#### 1.d — Ajustement des durées de service par une loi Gamma
 
 ```{r}
-
 ops_valid <- ops %>%
   filter(!is.na(ACTOR_TYPE), !is.na(EPT_min), EPT_min > 0)
 
@@ -323,19 +349,34 @@ for (i in seq_len(nrow(combos))) {
 }
 
 print(resultats_gamma)
-
 ```
 
-Les paramètres des lois gamma montrent des disparités importantes entre les types de ressources.
-Les temps de service les plus longs sont observés pour l'IDE_Annonce en Consultation (mean_EPT = 38.54 min), qui correspond à l'annonce de résultats médicaux, une étape naturellement longue car elle implique une communication approfondie avec le patient.
-Le MED en Consultation présente également des temps longs (13-14 min) avec un coefficient de variation élevé (CV ≈ 0.72-0.75), traduisant une forte variabilité liée à la complexité variable des cas.
-À l'inverse, les temps les plus courts sont observés pour l'AS en Consultation (mean_EPT ≈ 0.62-0.65 min) et l'AS en Examen (mean_EPT ≈ 1.15-1.24 min), ce qui correspond à des actes techniques brefs.
-Les CV faibles pour l'Agent_Accueil (≈ 0.20) et le MED en Examen prioritaire (≈ 0.34) indiquent des processus bien standardisés, tandis que les CV élevés pour l'Agent_Sortie (≈ 0.83-0.87) suggèrent une variabilité importante dans les formalités administratives de sortie.
+L'ajustement par loi Gamma permet de caractériser la distribution des temps de service pour chaque combinaison activité / acteur / priorité.
+Les résultats montrent des disparités importantes :
+
+- L'**IDE_Annonce en Consultation** présente de loin le temps de service le plus long (EPT moyen ≈ 38 min), ce qui est attendu : l'annonce d'un diagnostic implique un échange approfondi avec le patient, souvent émotionnellement chargé.
+- Le **MED en Consultation** a des temps moyens entre 13 et 14 min, avec un coefficient de variation (CV) élevé (≈ 0,72–0,75), reflétant la grande variabilité des situations cliniques rencontrées.
+- L'**AS** présente les durées les plus courtes, aussi bien en Consultation (≈ 0,6 min) qu'en Examen (≈ 1,2 min), correspondant à des actes techniques standardisés et rapides.
+- L'**Agent_Accueil** a un CV très faible (≈ 0,20), signe d'un processus bien rodé et peu variable.
+- L'**Agent_Sortie** présente, à l'inverse, un CV élevé (≈ 0,83–0,87), ce qui traduit la variabilité des formalités administratives de sortie selon les cas.
 
 ```{r}
-plots <- list()
+# Construire un dataframe avec les données observées + courbe gamma pour chaque combo
+plot_data <- purrr::map_dfr(seq_len(nrow(resultats_gamma)), function(i) {
+  row <- resultats_gamma[i, ]
+  x <- ops_valid$EPT_min[
+    ops_valid$ACTIVITY_MACRO == row$ACTIVITY_MACRO &
+    ops_valid$ACTOR_TYPE == row$ACTOR_TYPE &
+    ops_valid$PRIO == row$PRIO
+  ]
+  data.frame(
+    EPT_min = x,
+    facet_label = paste0(row$ACTIVITY_MACRO, "\n", row$ACTOR_TYPE, "\n(", row$PRIO, ")"),
+    PRIO = row$PRIO
+  )
+})
 
-for (i in seq_len(nrow(resultats_gamma))) {
+curve_data <- purrr::map_dfr(seq_len(nrow(resultats_gamma)), function(i) {
   row <- resultats_gamma[i, ]
   x <- ops_valid$EPT_min[
     ops_valid$ACTIVITY_MACRO == row$ACTIVITY_MACRO &
@@ -343,31 +384,36 @@ for (i in seq_len(nrow(resultats_gamma))) {
     ops_valid$PRIO == row$PRIO
   ]
   x_seq <- seq(0, max(x) * 1.2, length.out = 300)
-  gd    <- dgamma(x_seq, shape = row$shape, rate = row$rate)
+  data.frame(
+    x = x_seq,
+    y = dgamma(x_seq, shape = row$shape, rate = row$rate),
+    facet_label = paste0(row$ACTIVITY_MACRO, "\n", row$ACTOR_TYPE, "\n(", row$PRIO, ")")
+  )
+})
 
-  p <- ggplot(data.frame(x = x), aes(x = x)) +
-    geom_histogram(aes(y = after_stat(density)), bins = 12,
-                   fill = ifelse(row$PRIO == "Prioritaire", "#E53935", "#1565C0"),
-                   alpha = 0.6, color = "white") +
-    geom_line(data = data.frame(x = x_seq, y = gd),
-              aes(x = x, y = y), color = "black", linewidth = 1) +
-    labs(title = paste0(row$ACTIVITY_MACRO, " / ", row$ACTOR_TYPE, " (", row$PRIO, ")"),
-         subtitle = paste0("Gamma(shape=", row$shape, ", rate=", row$rate, ") | n=", row$n),
-         x = "EPT (min)", y = "Densité") +
-    theme_minimal(base_size = 9)
-
-  plots[[length(plots) + 1]] <- p
-}
-
-do.call(grid.arrange, c(plots, ncol = 3))
+ggplot(plot_data, aes(x = EPT_min)) +
+  geom_histogram(aes(y = after_stat(density), fill = PRIO),
+                 bins = 12, alpha = 0.6, color = "white") +
+  geom_line(data = curve_data, aes(x = x, y = y), color = "black", linewidth = 0.8) +
+  scale_fill_manual(values = c("Prioritaire" = "#E53935", "Standard" = "#1565C0")) +
+  facet_wrap(~ facet_label, scales = "free", ncol = 4) +
+  labs(title = "Ajustement Gamma des EPT par activité / acteur / priorité",
+       x = "EPT (min)", y = "Densité", fill = "Type patient") +
+  theme_minimal(base_size = 10) +
+  theme(strip.text = element_text(size = 8, face = "bold"),
+        legend.position = "bottom")
 ```
 
-Les histogrammes confirment visuellement la pertinence de l'ajustement par loi gamma.
-Pour les ressources avec des CV faibles (Agent_Accueil, MED en Examen Prioritaire), les distributions sont bien concentrées autour de la moyenne et la courbe gamma s'ajuste précisément.
-Pour les ressources avec des CV élevés (MED en Consultation, IDE_Annonce, Agent_Sortie), les distributions sont plus étalées et asymétriques à droite, ce qui est bien capturé par la loi gamma avec un paramètre de forme faible (shape \< 2).
+Les histogrammes confirment la pertinence du choix de la loi Gamma :
+
+- Pour les ressources à faible CV (Agent_Accueil, MED en Examen Prioritaire), les distributions sont concentrées et bien symétriques ; la courbe gamma s'ajuste précisément.
+- Pour les ressources à CV élevé (MED en Consultation, IDE_Annonce, Agent_Sortie), les distributions sont étalées et asymétriques à droite, ce que la loi Gamma capture naturellement grâce à son paramètre de forme faible (shape < 2).
+
+---
+
+#### 1.e — Validation du modèle par simulation Monte Carlo
 
 ```{r}
-
 set.seed(42)
 N_sim <- 1000
 
@@ -393,12 +439,10 @@ obs_table <- sequences %>%
   count(seq_str) %>%
   mutate(pct_obs = round(n / sum(n) * 100, 1))
 
-# Garder uniquement les séquences observées dans les données réelles
 comparison <- obs_table %>%
   left_join(sim_table, by = "seq_str") %>%
   replace_na(list(n_sim = 0, pct_sim = 0)) %>%
   arrange(desc(pct_obs)) %>%
-  # Tronquer les labels longs
   mutate(seq_label = ifelse(nchar(seq_str) > 50,
                             paste0(substr(seq_str, 1, 47), "..."),
                             seq_str))
@@ -413,20 +457,25 @@ comparison %>%
   geom_text(aes(label = paste0(Pct, "%")),
             position = position_dodge(0.9), hjust = -0.1, size = 3) +
   coord_flip() +
-  scale_fill_manual(values = c("Observé" = "#1565C0", "Simulé (Markov)" = "#E53935")) +
-  labs(title = "Validation : observé vs modèle de Markov (N=1000)",
-       x = "Séquence", y = "Fréquence (%)") +
+  scale_fill_manual(values = c("Observé" = "#00695C", "Simulé (Markov)" = "#E53935")) +
+  labs(title = "Validation du modèle de Markov — Observé vs Simulé (N = 1 000)",
+       x = "Séquence de parcours", y = "Fréquence (%)") +
   theme_minimal() +
   expand_limits(y = max(comparison$pct_obs, comparison$pct_sim, na.rm = TRUE) * 1.4)
 ```
 
-La validation par simulation Monte Carlo montre que le modèle de chaîne de Markov reproduit raisonnablement bien la réalité observée.
-La séquence la plus fréquente (Accueil → Consultation → Sortie) est légèrement surestimée par le modèle (50.9% simulé vs 44.1% observé), tandis que la séquence avec un aller-retour Examen → Consultation est légèrement sous-estimée (16.5% simulé vs 22.1% observé).
-Ces écarts s'expliquent par le fait que le modèle de Markov suppose que chaque transition est indépendante de l'historique du patient, ce qui ne capture pas parfaitement les dépendances entre étapes successives.
-Néanmoins, l'ordre de grandeur des fréquences est bien respecté, ce qui valide l'utilisation de ce modèle pour paramétrer la simulation AnyLogic de la question 3.
+La simulation Monte Carlo sur 1 000 patients virtuels montre que le modèle de Markov reproduit de manière satisfaisante les distributions observées.
+
+La séquence **Accueil → Consultation → Sortie** est légèrement sur-estimée par le modèle (50,9 % simulé vs 44,1 % observé), tandis que le circuit avec aller-retour en Examen (**Accueil → Consultation → Examen → Consultation → Sortie**) est légèrement sous-estimé (16,5 % vs 22,1 %).
+Cet écart est inhérent à l'hypothèse de Markov : chaque transition est supposée indépendante de l'historique du patient, ce qui ne permet pas de capter les corrélations entre étapes successives (par exemple, un patient ayant eu un examen a peut-être une probabilité plus élevée de retourner en consultation qu'un patient n'en ayant pas eu).
+
+Malgré ces limites, les ordres de grandeur sont bien respectés et le modèle constitue une base robuste pour paramétrer la simulation AnyLogic de la Question 3.
+
+---
+
+#### 1.f — Comparaison avec un modèle plus détaillé
 
 ```{r}
-# Modèle détaillé : on garde CURRENT_LOCATION sans agréger en ACTIVITY_MACRO
 ops_detail <- ops %>%
   filter(!is.na(ACTOR_TYPE), !is.na(EPT_min), EPT_min > 0)
 
@@ -465,8 +514,7 @@ for (i in seq_len(nrow(combos_detail))) {
 }
 
 print(resultats_detail)
-# Comparaison modèle simplifié vs modèle détaillé
-# On ajoute la colonne ACTIVITY_MACRO dans le détaillé pour pouvoir comparer
+
 resultats_detail <- resultats_detail %>%
   mutate(ACTIVITY_MACRO = case_when(
     str_detect(CURRENT_LOCATION, "Uro_Box")            ~ "Consultation",
@@ -479,7 +527,6 @@ resultats_detail <- resultats_detail %>%
     TRUE ~ NA_character_
   ))
 
-# Comparaison des moyennes EPT : simplifié vs détaillé
 comp_modeles <- resultats_gamma %>%
   dplyr::select(PRIO, ACTIVITY_MACRO, ACTOR_TYPE, 
                 mean_simple = mean_EPT_min, cv_simple = cv) %>%
@@ -498,7 +545,6 @@ comp_modeles <- resultats_gamma %>%
 cat("=== Comparaison modèle simplifié vs modèle détaillé ===\n")
 print(comp_modeles)
 
-# Visualisation
 comp_modeles %>%
   pivot_longer(cols = c(mean_simple, mean_detail),
                names_to = "Modele", values_to = "mean_EPT") %>%
@@ -512,45 +558,50 @@ comp_modeles %>%
             position = position_dodge(0.9), vjust = -0.4, size = 2.8) +
   facet_wrap(~ ACTIVITY_MACRO, scales = "free") +
   scale_fill_manual(values = c("Simplifié" = "#1565C0", "Détaillé" = "#E53935")) +
-  labs(title = "Comparaison EPT moyen : modèle simplifié vs modèle détaillé",
+  labs(title = "EPT moyen : modèle simplifié (macro) vs modèle détaillé (par salle)",
        x = "Ressource (type patient)", y = "EPT moyen (min)", fill = "Modèle") +
   theme_minimal(base_size = 9) +
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
-
 ```
 
-La comparaison entre le modèle simplifié (agrégé par ACTIVITY_MACRO) et le modèle détaillé (par location individuelle) montre que les EPT moyens sont très proches dans la majorité des cas, avec des écarts inférieurs à 5% pour la plupart des combinaisons.
-Les différences les plus importantes sont observées pour le MED en Consultation Prioritaire (-20.5%) et l'AS en Examen Standard (+35.5%), ce qui indique que l'agrégation introduit un biais non négligeable pour ces ressources spécifiques.
-Ces résultats valident globalement l'approche simplifiée : le regroupement par activité macro ne déforme pas significativement les distributions de temps de service dans la plupart des cas.
-Le modèle simplifié offre donc un bon compromis entre fidélité à la réalité et complexité de modélisation, ce qui justifie son utilisation pour paramétrer la simulation du service d'urologie en question 3.
+La confrontation entre le modèle agrégé (par activité macro) et le modèle détaillé (par salle individuelle) montre que les deux approches donnent des résultats très proches pour la majorité des combinaisons, avec des écarts inférieurs à 5 %.
 
-### Question 2) Simulation du service d'accueil sous Anylogic (/2.5)
+Les différences les plus significatives concernent le **MED en Consultation Prioritaire** (écart de -20,5 %) et l'**AS en Examen Standard** (+35,5 %), ce qui indique que l'agrégation introduit un biais non négligeable pour ces ressources spécifiques.
+Ces écarts peuvent s'expliquer par des comportements hétérogènes entre salles qui disparaissent lorsqu'on agrège (par exemple, une salle dédiée aux cas lourds qui tire la moyenne vers le haut).
 
-A l'aide d'Anylogic, construisez le modèle de simulation correspondant à ce que vous avez fait au devoir 3 avec un modèle à 1 serveur pour le bureau prioritaire et un modèle à 3 serveurs pour les autres.
-Vous testerez différents combinaisons de scénarios :
+**Conclusion** : le modèle simplifié offre un bon compromis entre fidélité à la réalité et complexité de mise en œuvre.
+Son utilisation pour paramétrer la simulation AnyLogic de la Question 3 est justifiée, à condition de garder en tête les biais identifiés pour les ressources MED Prioritaire et AS Examen Standard.
 
-- Arrivées réelles puis arrivées de poisson puis arrivées de poisson non homogènes
+---
 
-- Temps services exponentiels puis gamma
+### Question 2) Simulation du service d'accueil sous AnyLogic (/2.5)
 
-Pour les scénarios avec arrivées de poisson (homogènes et non homogènes), regarder l'évolution du niveau d'occupation et d'attente en fonction du taux lambda d'arrivé (différent de celui mesuré) et vérifiez bien que la saturation du service arrivé quand le taux d'arrivé atteint le taux de service maximal (quand $\rho \geq 1$).
+À l'aide d'AnyLogic, construisez le modèle de simulation du service d'accueil correspondant aux résultats du Devoir 3, avec un modèle à **1 serveur** pour le bureau prioritaire et un modèle à **3 serveurs** pour les autres.
 
-Finalement, à partir des arrivées réelles, testez le comportement du modèle pour différents nombre de serveurs avec un planning "dynamique" sur les tranches [8h;14h] et [14h;20h] avec 1 à 4 agents d'accueil disponibles par tranche (les patients prioritaires / non prioritaires peuvent être redirigés vers un autre bureau que celui où il doit aller initialement).
+Vous testerez différentes combinaisons de scénarios :
+
+- Arrivées réelles, puis arrivées de Poisson homogènes, puis arrivées de Poisson non homogènes
+
+- Temps de service exponentiels, puis loi Gamma
+
+Pour les scénarios avec arrivées de Poisson (homogènes et non homogènes), étudiez l'évolution du taux d'occupation et de l'attente en fonction du taux λ d'arrivée, et vérifiez que la saturation du service survient lorsque le taux d'arrivée atteint le taux de service maximal (ρ ≥ 1).
+
+Enfin, à partir des arrivées réelles, testez le comportement du modèle pour différents nombres de serveurs avec un planning **dynamique** sur les tranches [8h ; 14h] et [14h ; 20h], avec 1 à 4 agents d'accueil disponibles par tranche (les patients prioritaires/non prioritaires peuvent être redirigés vers un autre bureau si nécessaire).
 
 ### Question 3) Simulation du service d'urologie (/5)
 
-Avec la même méthodologie, et en considérant les circuits patients de la question 1, modélisez l'ensemble du service d'urologie sous Anylogic afin de répondre aux questions suivantes :
+Avec la même méthodologie, et en vous appuyant sur les circuits patients modélisés en Question 1, construisez la simulation complète du service d'urologie sous AnyLogic pour répondre aux questions suivantes :
 
 ```         
-- En considérant un processus de Poisson non homogène avec les taux d'arrivées observées dans les données et le modèle de circuit patient de la question 1, quel est la configuration du planning sur les 2 tranches [8h;14h] et [14h;20h] qui **minimise le nombre d'agents moyen** sur la journée tout en évitant la saturation (tous les patients doivent avoir fini leur prise en charge avant 20h) ? 
+- En considérant un processus de Poisson non homogène avec les taux d'arrivées observés dans les données et le modèle de circuit patient de la Question 1, quelle est la configuration de planning sur les 2 tranches [8h ; 14h] et [14h ; 20h] qui **minimise le nombre moyen d'agents** sur la journée tout en évitant la saturation (tous les patients doivent avoir terminé leur prise en charge avant 20h) ?
 
-- En prenant en considération le niveau d'occupation avec cette configuration et le/les goulet(s) d'étranglement, proposez un planning un peu plus robuste / raisonnable (avec 1 ou 2 plannifications d'acteurs en plus sur les tranches de service) qui diminuerait drastiquement le niveau d'occupation / d'attente moyen.
+- En prenant en compte le taux d'occupation obtenu avec cette configuration et les goulets d'étranglement identifiés, proposez un planning légèrement plus robuste (avec 1 ou 2 ressources supplémentaires par tranche) qui réduirait significativement le taux d'occupation et l'attente moyens.
 ```
 
 ### Discussion supplémentaire (points complémentaires sur chaque question)
 
-Profitez en pour comparer votre modèle à la réalité.
+Pour chaque question, comparez les résultats de simulation à la réalité observée dans les données, en quantifiant les écarts et en identifiant leurs causes possibles.
 
 ### Soutenance (/10)
 
-Préparez une **présentation orale de votre démarche**, de vos résulats et analyses de 15 min pour le **14/05**.
+Préparez une **présentation orale de 15 minutes** exposant votre démarche, vos résultats et vos analyses, pour le **14/05/2026**.
