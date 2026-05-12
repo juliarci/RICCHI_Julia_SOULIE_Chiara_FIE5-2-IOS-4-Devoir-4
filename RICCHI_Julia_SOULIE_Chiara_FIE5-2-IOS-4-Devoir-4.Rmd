@@ -22,21 +22,21 @@ La figure ci-dessous présente le plan du plateau de consultations (voir fichier
 
 Les colonnes du fichier de données sont les suivantes :
 
-- *ID* (Col A) : Identifiant anonymisé du patient
+-   *ID* (Col A) : Identifiant anonymisé du patient
 
-- *Timestamp start* (Col B) : Horodatage d'entrée dans une zone ou salle
+-   *Timestamp start* (Col B) : Horodatage d'entrée dans une zone ou salle
 
-- *Timestamp end* (Col C) : Horodatage de sortie de la zone ou salle
+-   *Timestamp end* (Col C) : Horodatage de sortie de la zone ou salle
 
-- *Activity_MACRO* (Col D) : Catégorie d'activité (ex. Accueil, Consultation…)
+-   *Activity_MACRO* (Col D) : Catégorie d'activité (ex. Accueil, Consultation…)
 
-- *Activity_DETAILS* (Col E) : Détail de l'activité et indice de salle (i)
+-   *Activity_DETAILS* (Col E) : Détail de l'activité et indice de salle (i)
 
-- *Ress.Humaines* (Col F) : Ressources humaines mobilisées (personnel administratif ou soignant)
+-   *Ress.Humaines* (Col F) : Ressources humaines mobilisées (personnel administratif ou soignant)
 
-- *distance parcourues* (Col G) : Distance cumulée parcourue par le patient
+-   *distance parcourues* (Col G) : Distance cumulée parcourue par le patient
 
-- *début/fin opX* (Col H à O) : Horodatages de début et de fin pour chaque opération de prise en charge (jusqu'à 4 opérations par activité)
+-   *début/fin opX* (Col H à O) : Horodatages de début et de fin pour chaque opération de prise en charge (jusqu'à 4 opérations par activité)
 
 Le tableau de données est consultable ici : <http://bit.ly/logPatients>
 
@@ -120,7 +120,7 @@ Le patient 10 mobilise 6 combinaisons activité / acteur distinctes.
 
 Nous comparons notre modèle simplifié (agrégé par activité macro) à un modèle plus granulaire (par salle individuelle), afin d'évaluer le biais introduit par l'agrégation.
 
----
+------------------------------------------------------------------------
 
 #### 1.a — Préparation des données et calcul de l'EPT
 
@@ -189,7 +189,7 @@ ops %>%
 Le calcul de l'EPT consiste à déterminer, pour chaque opération d'un acteur, le temps effectivement consacré au patient en tenant compte de l'éventuelle disponibilité de l'acteur depuis la fin de l'opération précédente.
 Ainsi, si un acteur finit une prise en charge à 9h05 et commence la suivante à 9h10, l'EPT de la seconde opération ne démarre pas à 9h00 (heure d'entrée du patient) mais à 9h05, ce qui évite de sur-estimer les temps de service.
 
----
+------------------------------------------------------------------------
 
 #### 1.b — Construction de la chaîne de Markov macro
 
@@ -236,9 +236,9 @@ La deuxième séquence la plus fréquente (**Accueil → Consultation → Examen
 
 La matrice de transition met en évidence la structure fortement séquentielle du parcours :
 
-- Depuis l'Accueil, la grande majorité des patients se dirigent vers la Consultation (86,8 %), les 13,2 % restants étant orientés directement vers l'Examen.
-- Depuis la Consultation, environ 58 % des patients sortent du service, tandis que 42 % sont envoyés en Examen.
-- Depuis l'Examen, 75,5 % des patients retournent en Consultation (pour l'interprétation des résultats) et 24,5 % quittent directement le service.
+-   Depuis l'Accueil, la grande majorité des patients se dirigent vers la Consultation (86,8 %), les 13,2 % restants étant orientés directement vers l'Examen.
+-   Depuis la Consultation, environ 58 % des patients sortent du service, tandis que 42 % sont envoyés en Examen.
+-   Depuis l'Examen, 75,5 % des patients retournent en Consultation (pour l'interprétation des résultats) et 24,5 % quittent directement le service.
 
 Il n'existe pas de transition de retour vers l'Accueil, ce qui confirme que cet état est un point d'entrée unique.
 La Sortie est un **état absorbant** : aucun patient ne repart vers une autre activité une fois sorti.
@@ -263,7 +263,7 @@ as.data.frame(trans_prob) %>%
 La heatmap confirme la lecture de la matrice : les transitions les plus probables (teinte foncée) sont **Accueil → Consultation** et **Examen → Consultation**, ce qui souligne le rôle pivot de la Consultation dans l'organisation du service.
 L'absence de case colorée sur la ligne "Sortie" confirme bien son caractère absorbant.
 
----
+------------------------------------------------------------------------
 
 #### 1.c — Probabilités de sollicitation des ressources
 
@@ -301,12 +301,12 @@ ggplot(proba_res, aes(x = ACTOR_TYPE, y = prob, fill = PRIO)) +
 
 Les probabilités d'intervention révèlent une structure cohérente avec l'organisation du service :
 
-- À l'**Accueil**, l'Agent_Accueil intervient systématiquement (100 % des passages), ce qui est logique puisqu'il s'agit du point d'entrée obligatoire.
-- En **Consultation**, le MED est sollicité dans 57 à 61 % des passages, l'AS dans 56 à 57 % des cas. L'IDE et l'IDE_Annonce interviennent plus rarement (7 à 18 %), réservés à des actes spécifiques (soins infirmiers, annonces de diagnostic).
-- Les taux d'intervention sont proches entre patients prioritaires et standards en Consultation, ce qui suggère que la priorité influe davantage sur *l'ordre de passage* que sur la *nature des actes* réalisés.
-- En **Examen**, l'IDE est la ressource la plus mobilisée (50 à 73 % des passages), devant l'AS (50 à 58 %) et le MED (38 à 61 %). La variabilité plus marquée chez les patients prioritaires s'explique probablement par le faible effectif de ce sous-groupe dans cette activité (n ≈ 10), rendant les estimations moins robustes.
+-   À l'**Accueil**, l'Agent_Accueil intervient systématiquement (100 % des passages), ce qui est logique puisqu'il s'agit du point d'entrée obligatoire.
+-   En **Consultation**, le MED est sollicité dans 57 à 61 % des passages, l'AS dans 56 à 57 % des cas. L'IDE et l'IDE_Annonce interviennent plus rarement (7 à 18 %), réservés à des actes spécifiques (soins infirmiers, annonces de diagnostic).
+-   Les taux d'intervention sont proches entre patients prioritaires et standards en Consultation, ce qui suggère que la priorité influe davantage sur *l'ordre de passage* que sur la *nature des actes* réalisés.
+-   En **Examen**, l'IDE est la ressource la plus mobilisée (50 à 73 % des passages), devant l'AS (50 à 58 %) et le MED (38 à 61 %). La variabilité plus marquée chez les patients prioritaires s'explique probablement par le faible effectif de ce sous-groupe dans cette activité (n ≈ 10), rendant les estimations moins robustes.
 
----
+------------------------------------------------------------------------
 
 #### 1.d — Ajustement des durées de service par une loi Gamma
 
@@ -354,11 +354,11 @@ print(resultats_gamma)
 L'ajustement par loi Gamma permet de caractériser la distribution des temps de service pour chaque combinaison activité / acteur / priorité.
 Les résultats montrent des disparités importantes :
 
-- L'**IDE_Annonce en Consultation** présente de loin le temps de service le plus long (EPT moyen ≈ 38 min), ce qui est attendu : l'annonce d'un diagnostic implique un échange approfondi avec le patient, souvent émotionnellement chargé.
-- Le **MED en Consultation** a des temps moyens entre 13 et 14 min, avec un coefficient de variation (CV) élevé (≈ 0,72–0,75), reflétant la grande variabilité des situations cliniques rencontrées.
-- L'**AS** présente les durées les plus courtes, aussi bien en Consultation (≈ 0,6 min) qu'en Examen (≈ 1,2 min), correspondant à des actes techniques standardisés et rapides.
-- L'**Agent_Accueil** a un CV très faible (≈ 0,20), signe d'un processus bien rodé et peu variable.
-- L'**Agent_Sortie** présente, à l'inverse, un CV élevé (≈ 0,83–0,87), ce qui traduit la variabilité des formalités administratives de sortie selon les cas.
+-   L'**IDE_Annonce en Consultation** présente de loin le temps de service le plus long (EPT moyen ≈ 38 min), ce qui est attendu : l'annonce d'un diagnostic implique un échange approfondi avec le patient, souvent émotionnellement chargé.
+-   Le **MED en Consultation** a des temps moyens entre 13 et 14 min, avec un coefficient de variation (CV) élevé (≈ 0,72–0,75), reflétant la grande variabilité des situations cliniques rencontrées.
+-   L'**AS** présente les durées les plus courtes, aussi bien en Consultation (≈ 0,6 min) qu'en Examen (≈ 1,2 min), correspondant à des actes techniques standardisés et rapides.
+-   L'**Agent_Accueil** a un CV très faible (≈ 0,20), signe d'un processus bien rodé et peu variable.
+-   L'**Agent_Sortie** présente, à l'inverse, un CV élevé (≈ 0,83–0,87), ce qui traduit la variabilité des formalités administratives de sortie selon les cas.
 
 ```{r}
 # Construire un dataframe avec les données observées + courbe gamma pour chaque combo
@@ -406,10 +406,10 @@ ggplot(plot_data, aes(x = EPT_min)) +
 
 Les histogrammes confirment la pertinence du choix de la loi Gamma :
 
-- Pour les ressources à faible CV (Agent_Accueil, MED en Examen Prioritaire), les distributions sont concentrées et bien symétriques ; la courbe gamma s'ajuste précisément.
-- Pour les ressources à CV élevé (MED en Consultation, IDE_Annonce, Agent_Sortie), les distributions sont étalées et asymétriques à droite, ce que la loi Gamma capture naturellement grâce à son paramètre de forme faible (shape < 2).
+-   Pour les ressources à faible CV (Agent_Accueil, MED en Examen Prioritaire), les distributions sont concentrées et bien symétriques ; la courbe gamma s'ajuste précisément.
+-   Pour les ressources à CV élevé (MED en Consultation, IDE_Annonce, Agent_Sortie), les distributions sont étalées et asymétriques à droite, ce que la loi Gamma capture naturellement grâce à son paramètre de forme faible (shape \< 2).
 
----
+------------------------------------------------------------------------
 
 #### 1.e — Validation du modèle par simulation Monte Carlo
 
@@ -471,7 +471,7 @@ Cet écart est inhérent à l'hypothèse de Markov : chaque transition est suppo
 
 Malgré ces limites, les ordres de grandeur sont bien respectés et le modèle constitue une base robuste pour paramétrer la simulation AnyLogic de la Question 3.
 
----
+------------------------------------------------------------------------
 
 #### 1.f — Comparaison avec un modèle plus détaillé
 
@@ -572,7 +572,7 @@ Ces écarts peuvent s'expliquer par des comportements hétérogènes entre salle
 **Conclusion** : le modèle simplifié offre un bon compromis entre fidélité à la réalité et complexité de mise en œuvre.
 Son utilisation pour paramétrer la simulation AnyLogic de la Question 3 est justifiée, à condition de garder en tête les biais identifiés pour les ressources MED Prioritaire et AS Examen Standard.
 
----
+------------------------------------------------------------------------
 
 ### Question 2) Simulation du service d'accueil sous AnyLogic (/2.5)
 
@@ -580,13 +580,52 @@ Son utilisation pour paramétrer la simulation AnyLogic de la Question 3 est jus
 
 Vous testerez différentes combinaisons de scénarios :
 
-- Arrivées réelles, puis arrivées de Poisson homogènes, puis arrivées de Poisson non homogènes
+-   Arrivées réelles, puis arrivées de Poisson homogènes, puis arrivées de Poisson non homogènes
 
-- Temps de service exponentiels, puis loi Gamma
+-   Temps de service exponentiels, puis loi Gamma
 
 Pour les scénarios avec arrivées de Poisson (homogènes et non homogènes), étudiez l'évolution du taux d'occupation et de l'attente en fonction du taux λ d'arrivée, et vérifiez que la saturation du service survient lorsque le taux d'arrivée atteint le taux de service maximal (ρ ≥ 1).
 
 Enfin, à partir des arrivées réelles, testez le comportement du modèle pour différents nombres de serveurs avec un planning **dynamique** sur les tranches [8h ; 14h] et [14h ; 20h], avec 1 à 4 agents d'accueil disponibles par tranche (les patients prioritaires/non prioritaires peuvent être redirigés vers un autre bureau si nécessaire).
+
+```{r}
+# Charger les données accueil
+accueil <- devoir3_data_accueil  # déjà chargé dans ton Rmd
+
+# Extraire les timestamps d'arrivées réelles des patients à l'accueil
+arrivees <- patients %>%
+  filter(ACTIVITY_MACRO == "Accueil") %>%
+  group_by(ID, PRIO) %>%
+  summarise(heure_arrivee = min(DATETIME_BEGIN), .groups = "drop") %>%
+  arrange(heure_arrivee) %>%
+  mutate(
+    # Convertir en minutes depuis 8h00 (début de journée)
+    minutes_depuis_8h = as.numeric(difftime(heure_arrivee, 
+                                             as.POSIXct("2015-11-12 08:00:00"), 
+                                             units = "mins"))
+  )
+
+write.csv2(arrivees, "local_data/arrivees_accueil.csv", row.names = FALSE)
+
+# Exporter aussi les paramètres gamma de l'accueil pour AnyLogic
+params_accueil <- resultats_gamma %>%
+  filter(ACTIVITY_MACRO == "Accueil")
+
+write.csv2(params_accueil, "local_data/params_gamma_accueil.csv", row.names = FALSE)
+
+library(writexl)
+
+arrivees <- arrivees %>%
+  mutate(heure_arrivee_str = format(heure_arrivee, "%Y-%m-%d %H:%M:%S"))
+arrivees <- arrivees %>%
+  mutate(id = row_number())
+
+write_xlsx(arrivees, "local_data/arrivees_accueil.xlsx")
+
+print(arrivees)
+print(params_accueil)
+```
+
 
 ### Question 3) Simulation du service d'urologie (/5)
 
