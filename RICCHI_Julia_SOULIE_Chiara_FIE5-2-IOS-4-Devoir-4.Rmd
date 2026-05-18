@@ -1,3 +1,5 @@
+------------------------------------------------------------------------
+
 ---
 title: "FIE5-2-IOS-4-Devoir-4"
 author: "Julia Ricchi & Chiara Soulié"
@@ -629,6 +631,26 @@ write.csv2(params_accueil, "local_data/params_gamma_accueil.csv", row.names = FA
 
 print(arrivees)
 print(params_accueil)
+```
+
+Simulation sous Anylogic :
+
+Fonction exponentielle et capacité prio 1 / standard 3
+
+![](images/clipboard-2237586977.png)
+
+Fonction exponentielle et capacité prio 1 / standard 2
+
+![](images/clipboard-3086164139.png)
+
+Fonction exponentielle et capacité prio 1 / standard 1
+
+![](images/clipboard-115699292.png)
+
+Fonction poisson homogene cap prio 1 et standard 3
+
+```{r}
+entree = exponential(1.0 / 10.59)
 ```
 
 ### Question 3) Simulation du service d'urologie (/5)

@@ -274,6 +274,36 @@
 						</InitialValue>
 					</Properties>
 				</Variable>
+				<Variable Class="PlainVariable">
+					<Id>1779087045176</Id>
+					<Name><![CDATA[sommeServicePrio]]></Name>
+					<X>550</X><Y>590</Y>
+					<Label><X>10</X><Y>0</Y></Label>
+					<PublicFlag>false</PublicFlag>
+					<PresentationFlag>false</PresentationFlag>
+					<ShowLabel>true</ShowLabel>
+					<Properties SaveInSnapshot="true" Constant="false" AccessType="public" StaticVariable="false">
+						<Type><![CDATA[int]]></Type>        
+						<InitialValue Class="CodeValue">
+							<Code><![CDATA[0]]></Code>
+						</InitialValue>
+					</Properties>
+				</Variable>
+				<Variable Class="PlainVariable">
+					<Id>1779087087023</Id>
+					<Name><![CDATA[sommeServiceStandard]]></Name>
+					<X>550</X><Y>620</Y>
+					<Label><X>10</X><Y>0</Y></Label>
+					<PublicFlag>false</PublicFlag>
+					<PresentationFlag>false</PresentationFlag>
+					<ShowLabel>true</ShowLabel>
+					<Properties SaveInSnapshot="true" Constant="false" AccessType="public" StaticVariable="false">
+						<Type><![CDATA[double]]></Type>        
+						<InitialValue Class="CodeValue">
+							<Code><![CDATA[0]]></Code>
+						</InitialValue>
+					</Properties>
+				</Variable>
 				<Variable Class="Parameter">
 					<Id>1778957762608</Id>
 					<Name><![CDATA[capPrio]]></Name>
@@ -426,7 +456,7 @@
 				<Connector>
 					<Id>1778359658902</Id>
 					<Name><![CDATA[connector3]]></Name>
-					<X>590</X><Y>410</Y>
+					<X>580</X><Y>410</Y>
 					<Label><X>10</X><Y>0</Y></Label>
 					<PublicFlag>false</PublicFlag>
 					<PresentationFlag>true</PresentationFlag>
@@ -453,7 +483,7 @@
 					</TargetConnectableItemReference>
 					<Points>
 						<Point><X>0</X><Y>0</Y></Point>
-						<Point><X>-110</X><Y>0</Y></Point>
+						<Point><X>-100</X><Y>0</Y></Point>
 					</Points>
 				</Connector>
 				<Connector>
@@ -1043,7 +1073,7 @@ nbEntres++;]]></Code>
 						<Parameter>
 							<Name><![CDATA[delayTime]]></Name>
 							<Value Class="CodeUnitValue">
-								<Code><![CDATA[exponential(3.95)]]></Code>
+								<Code><![CDATA[exponential(1.0 / 3.95)]]></Code>
 								<Unit Class="TimeUnits"><![CDATA[MINUTE]]></Unit>
 							</Value>
 						</Parameter>
@@ -1071,7 +1101,8 @@ nbEntres++;]]></Code>
 						<Parameter>
 							<Name><![CDATA[onEnter]]></Name>
 							<Value Class="CodeValue">
-								<Code><![CDATA[sommeAttentePrio += time() - agent.tEntreeFile;]]></Code>
+								<Code><![CDATA[sommeAttentePrio += time() - agent.tEntreeFile;
+agent.tDebutService = time();]]></Code>
 							</Value>
 						</Parameter>
 						<Parameter>
@@ -1079,6 +1110,9 @@ nbEntres++;]]></Code>
 						</Parameter>
 						<Parameter>
 							<Name><![CDATA[onExit]]></Name>
+							<Value Class="CodeValue">
+								<Code><![CDATA[sommeServicePrio += time() - agent.tDebutService;]]></Code>
+							</Value>
 						</Parameter>
 						<Parameter>
 							<Name><![CDATA[onRemove]]></Name>
@@ -1299,7 +1333,7 @@ dernierDepart = max(dernierDepart, agent.tSortie);]]></Code>
 						<Parameter>
 							<Name><![CDATA[delayTime]]></Name>
 							<Value Class="CodeUnitValue">
-								<Code><![CDATA[exponential(3.99)]]></Code>
+								<Code><![CDATA[exponential(1.0 / 3.99)]]></Code>
 								<Unit Class="TimeUnits"><![CDATA[MINUTE]]></Unit>
 							</Value>
 						</Parameter>
@@ -1327,7 +1361,8 @@ dernierDepart = max(dernierDepart, agent.tSortie);]]></Code>
 						<Parameter>
 							<Name><![CDATA[onEnter]]></Name>
 							<Value Class="CodeValue">
-								<Code><![CDATA[sommeAttenteStandard += time() - agent.tEntreeFile;]]></Code>
+								<Code><![CDATA[sommeAttenteStandard += time() - agent.tEntreeFile;
+agent.tDebutService = time();]]></Code>
 							</Value>
 						</Parameter>
 						<Parameter>
@@ -1335,6 +1370,9 @@ dernierDepart = max(dernierDepart, agent.tSortie);]]></Code>
 						</Parameter>
 						<Parameter>
 							<Name><![CDATA[onExit]]></Name>
+							<Value Class="CodeValue">
+								<Code><![CDATA[sommeServiceStandard += time() - agent.tDebutService;]]></Code>
+							</Value>
 						</Parameter>
 						<Parameter>
 							<Name><![CDATA[onRemove]]></Name>
@@ -1368,7 +1406,7 @@ dernierDepart = max(dernierDepart, agent.tSortie);]]></Code>
 				<EmbeddedObject>
 					<Id>1778359657062</Id>
 					<Name><![CDATA[sink1]]></Name>
-					<X>590</X><Y>400</Y>
+					<X>580</X><Y>400</Y>
 					<Label><X>-15</X><Y>-25</Y></Label>
 					<PublicFlag>false</PublicFlag>
 					<PresentationFlag>true</PresentationFlag>
@@ -1572,7 +1610,7 @@ dernierDepart = max(dernierDepart, agent.tSortie);]]></Code>
 					<Rotation>0.0</Rotation>
 					<Color>-16777216</Color>
 					<Text><![CDATA[text]]></Text>
-					<TextCode><![CDATA["Saturation = " + ((nbEntres == nbSortis && dernierDepart <= 720) ? "NON" : "OUI")]]></TextCode>
+					<TextCode><![CDATA["Saturation = " + ((nbEntres == nbSortis && dernierDepart <= 20 * 60) ? "NON" : "OUI")]]></TextCode>
 					<Font>
 						<Name>SansSerif</Name>
 						<Size>10</Size>
@@ -1642,7 +1680,60 @@ dernierDepart = max(dernierDepart, agent.tSortie);]]></Code>
 					<Rotation>0.0</Rotation>
 					<Color>-16777216</Color>
 					<Text><![CDATA[text]]></Text>
-					<TextCode><![CDATA["Dernier départ = " + String.format("%.2f", dernierDepart) + " min"]]></TextCode>
+					<TextCode><![CDATA["Dernier départ = " 
++ (((int)Math.round(8 * 60 + dernierDepart) / 60) % 24)
++ "h"
++ String.format("%02d", ((int)Math.round(8 * 60 + dernierDepart) % 60))
++ (((int)Math.round(8 * 60 + dernierDepart) / 60) >= 24 ? " (J+1)" : "")
++ " (" + String.format("%.1f", dernierDepart) + " min)"]]></TextCode>
+					<Font>
+						<Name>SansSerif</Name>
+						<Size>10</Size>
+						<Style>0</Style>
+					</Font>
+					<Alignment>LEFT</Alignment>
+				</Text>
+				<Text>
+					<Id>1779087193399</Id>
+					<Name><![CDATA[text9]]></Name>
+					<X>330</X><Y>120</Y>
+					<Label><X>0</X><Y>-10</Y></Label>
+					<PublicFlag>true</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>false</ShowLabel>
+					<DrawMode>SHAPE_DRAW_2D</DrawMode>
+					<EmbeddedIcon>false</EmbeddedIcon>
+					<Z>0</Z>
+					<Rotation>0.0</Rotation>
+					<Color>-16777216</Color>
+					<Text><![CDATA[text]]></Text>
+					<TextCode><![CDATA["Service moyen prio = " 
++ String.format("%.2f", (nbSortisPrio > 0 ? sommeServicePrio / (double) nbSortisPrio : 0.0)) 
++ " min"]]></TextCode>
+					<Font>
+						<Name>SansSerif</Name>
+						<Size>10</Size>
+						<Style>0</Style>
+					</Font>
+					<Alignment>LEFT</Alignment>
+				</Text>
+				<Text>
+					<Id>1779087211963</Id>
+					<Name><![CDATA[text10]]></Name>
+					<X>330</X><Y>140</Y>
+					<Label><X>0</X><Y>-10</Y></Label>
+					<PublicFlag>true</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>false</ShowLabel>
+					<DrawMode>SHAPE_DRAW_2D</DrawMode>
+					<EmbeddedIcon>false</EmbeddedIcon>
+					<Z>0</Z>
+					<Rotation>0.0</Rotation>
+					<Color>-16777216</Color>
+					<Text><![CDATA[text]]></Text>
+					<TextCode><![CDATA["Service moyen standard = " 
++ String.format("%.2f", (nbSortisStandard > 0 ? sommeServiceStandard / (double) nbSortisStandard : 0.0)) 
++ " min"]]></TextCode>
 					<Font>
 						<Name>SansSerif</Name>
 						<Size>10</Size>
@@ -1806,6 +1897,18 @@ dernierDepart = max(dernierDepart, agent.tSortie);]]></Code>
 					<Id>1778957610607</Id>
 					<Name><![CDATA[tSortie]]></Name>
 					<X>50</X><Y>160</Y>
+					<Label><X>10</X><Y>0</Y></Label>
+					<PublicFlag>false</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>true</ShowLabel>
+					<Properties SaveInSnapshot="true" Constant="false" AccessType="public" StaticVariable="false">
+						<Type><![CDATA[double]]></Type>        
+					</Properties>
+				</Variable>
+				<Variable Class="PlainVariable">
+					<Id>1779087025195</Id>
+					<Name><![CDATA[tDebutService]]></Name>
+					<X>50</X><Y>190</Y>
 					<Label><X>10</X><Y>0</Y></Label>
 					<PublicFlag>false</PublicFlag>
 					<PresentationFlag>true</PresentationFlag>
@@ -1992,9 +2095,9 @@ dernierDepart = max(dernierDepart, agent.tSortie);]]></Code>
 			</PresentationProperties>
 			<ModelTimeProperties>
 				<StopOption><![CDATA[Stop at specified time]]></StopOption>
-				<InitialDate><![CDATA[1447286880000]]></InitialDate>
+				<InitialDate><![CDATA[1447315200000]]></InitialDate>
 				<InitialTime><![CDATA[0.0]]></InitialTime>
-				<FinalDate><![CDATA[1447340880000]]></FinalDate>
+				<FinalDate><![CDATA[1447369200000]]></FinalDate>
 				<FinalTime><![CDATA[900.0]]></FinalTime>
 			</ModelTimeProperties>
 			<BypassInitialScreen>true</BypassInitialScreen>
