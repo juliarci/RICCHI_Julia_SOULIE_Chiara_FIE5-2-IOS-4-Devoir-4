@@ -24,21 +24,21 @@ La figure ci-dessous présente le plan du plateau de consultations (voir fichier
 
 Les colonnes du fichier de données sont les suivantes :
 
-- *ID* (Col A) : Identifiant anonymisé du patient
+-   *ID* (Col A) : Identifiant anonymisé du patient
 
-- *Timestamp start* (Col B) : Horodatage d'entrée dans une zone ou salle
+-   *Timestamp start* (Col B) : Horodatage d'entrée dans une zone ou salle
 
-- *Timestamp end* (Col C) : Horodatage de sortie de la zone ou salle
+-   *Timestamp end* (Col C) : Horodatage de sortie de la zone ou salle
 
-- *Activity_MACRO* (Col D) : Catégorie d'activité (ex. Accueil, Consultation…)
+-   *Activity_MACRO* (Col D) : Catégorie d'activité (ex. Accueil, Consultation…)
 
-- *Activity_DETAILS* (Col E) : Détail de l'activité et indice de salle (i)
+-   *Activity_DETAILS* (Col E) : Détail de l'activité et indice de salle (i)
 
-- *Ress.Humaines* (Col F) : Ressources humaines mobilisées (personnel administratif ou soignant)
+-   *Ress.Humaines* (Col F) : Ressources humaines mobilisées (personnel administratif ou soignant)
 
-- *distance parcourues* (Col G) : Distance cumulée parcourue par le patient
+-   *distance parcourues* (Col G) : Distance cumulée parcourue par le patient
 
-- *début/fin opX* (Col H à O) : Horodatages de début et de fin pour chaque opération de prise en charge (jusqu'à 4 opérations par activité)
+-   *début/fin opX* (Col H à O) : Horodatages de début et de fin pour chaque opération de prise en charge (jusqu'à 4 opérations par activité)
 
 Le tableau de données est consultable ici : <http://bit.ly/logPatients>
 
@@ -238,9 +238,9 @@ La deuxième séquence la plus fréquente (**Accueil → Consultation → Examen
 
 La matrice de transition met en évidence la structure fortement séquentielle du parcours :
 
-- Depuis l'Accueil, la grande majorité des patients se dirigent vers la Consultation (86,8 %), les 13,2 % restants étant orientés directement vers l'Examen.
-- Depuis la Consultation, environ 58 % des patients sortent du service, tandis que 42 % sont envoyés en Examen.
-- Depuis l'Examen, 75,5 % des patients retournent en Consultation (pour l'interprétation des résultats) et 24,5 % quittent directement le service.
+-   Depuis l'Accueil, la grande majorité des patients se dirigent vers la Consultation (86,8 %), les 13,2 % restants étant orientés directement vers l'Examen.
+-   Depuis la Consultation, environ 58 % des patients sortent du service, tandis que 42 % sont envoyés en Examen.
+-   Depuis l'Examen, 75,5 % des patients retournent en Consultation (pour l'interprétation des résultats) et 24,5 % quittent directement le service.
 
 Il n'existe pas de transition de retour vers l'Accueil, ce qui confirme que cet état est un point d'entrée unique.
 La Sortie est un **état absorbant** : aucun patient ne repart vers une autre activité une fois sorti.
@@ -303,10 +303,10 @@ ggplot(proba_res, aes(x = ACTOR_TYPE, y = prob, fill = PRIO)) +
 
 Les probabilités d'intervention révèlent une structure cohérente avec l'organisation du service :
 
-- À l'**Accueil**, l'Agent_Accueil intervient systématiquement (100 % des passages), ce qui est logique puisqu'il s'agit du point d'entrée obligatoire.
-- En **Consultation**, le MED est sollicité dans 57 à 61 % des passages, l'AS dans 56 à 57 % des cas. L'IDE et l'IDE_Annonce interviennent plus rarement (7 à 18 %), réservés à des actes spécifiques (soins infirmiers, annonces de diagnostic).
-- Les taux d'intervention sont proches entre patients prioritaires et standards en Consultation, ce qui suggère que la priorité influe davantage sur *l'ordre de passage* que sur la *nature des actes* réalisés.
-- En **Examen**, l'IDE est la ressource la plus mobilisée (50 à 73 % des passages), devant l'AS (50 à 58 %) et le MED (38 à 61 %). La variabilité plus marquée chez les patients prioritaires s'explique probablement par le faible effectif de ce sous-groupe dans cette activité (n ≈ 10), rendant les estimations moins robustes.
+-   À l'**Accueil**, l'Agent_Accueil intervient systématiquement (100 % des passages), ce qui est logique puisqu'il s'agit du point d'entrée obligatoire.
+-   En **Consultation**, le MED est sollicité dans 57 à 61 % des passages, l'AS dans 56 à 57 % des cas. L'IDE et l'IDE_Annonce interviennent plus rarement (7 à 18 %), réservés à des actes spécifiques (soins infirmiers, annonces de diagnostic).
+-   Les taux d'intervention sont proches entre patients prioritaires et standards en Consultation, ce qui suggère que la priorité influe davantage sur *l'ordre de passage* que sur la *nature des actes* réalisés.
+-   En **Examen**, l'IDE est la ressource la plus mobilisée (50 à 73 % des passages), devant l'AS (50 à 58 %) et le MED (38 à 61 %). La variabilité plus marquée chez les patients prioritaires s'explique probablement par le faible effectif de ce sous-groupe dans cette activité (n ≈ 10), rendant les estimations moins robustes.
 
 ------------------------------------------------------------------------
 
@@ -356,11 +356,11 @@ print(resultats_gamma)
 L'ajustement par loi Gamma permet de caractériser la distribution des temps de service pour chaque combinaison activité / acteur / priorité.
 Les résultats montrent des disparités importantes :
 
-- L'**IDE_Annonce en Consultation** présente de loin le temps de service le plus long (EPT moyen ≈ 38 min), ce qui est attendu : l'annonce d'un diagnostic implique un échange approfondi avec le patient, souvent émotionnellement chargé.
-- Le **MED en Consultation** a des temps moyens entre 13 et 14 min, avec un coefficient de variation (CV) élevé (≈ 0,72–0,75), reflétant la grande variabilité des situations cliniques rencontrées.
-- L'**AS** présente les durées les plus courtes, aussi bien en Consultation (≈ 0,6 min) qu'en Examen (≈ 1,2 min), correspondant à des actes techniques standardisés et rapides.
-- L'**Agent_Accueil** a un CV très faible (≈ 0,20), signe d'un processus bien rodé et peu variable.
-- L'**Agent_Sortie** présente, à l'inverse, un CV élevé (≈ 0,83–0,87), ce qui traduit la variabilité des formalités administratives de sortie selon les cas.
+-   L'**IDE_Annonce en Consultation** présente de loin le temps de service le plus long (EPT moyen ≈ 38 min), ce qui est attendu : l'annonce d'un diagnostic implique un échange approfondi avec le patient, souvent émotionnellement chargé.
+-   Le **MED en Consultation** a des temps moyens entre 13 et 14 min, avec un coefficient de variation (CV) élevé (≈ 0,72–0,75), reflétant la grande variabilité des situations cliniques rencontrées.
+-   L'**AS** présente les durées les plus courtes, aussi bien en Consultation (≈ 0,6 min) qu'en Examen (≈ 1,2 min), correspondant à des actes techniques standardisés et rapides.
+-   L'**Agent_Accueil** a un CV très faible (≈ 0,20), signe d'un processus bien rodé et peu variable.
+-   L'**Agent_Sortie** présente, à l'inverse, un CV élevé (≈ 0,83–0,87), ce qui traduit la variabilité des formalités administratives de sortie selon les cas.
 
 ```{r}
 # Construire un dataframe avec les données observées + courbe gamma pour chaque combo
@@ -408,8 +408,8 @@ ggplot(plot_data, aes(x = EPT_min)) +
 
 Les histogrammes confirment la pertinence du choix de la loi Gamma :
 
-- Pour les ressources à faible CV (Agent_Accueil, MED en Examen Prioritaire), les distributions sont concentrées et bien symétriques ; la courbe gamma s'ajuste précisément.
-- Pour les ressources à CV élevé (MED en Consultation, IDE_Annonce, Agent_Sortie), les distributions sont étalées et asymétriques à droite, ce que la loi Gamma capture naturellement grâce à son paramètre de forme faible (shape \< 2).
+-   Pour les ressources à faible CV (Agent_Accueil, MED en Examen Prioritaire), les distributions sont concentrées et bien symétriques ; la courbe gamma s'ajuste précisément.
+-   Pour les ressources à CV élevé (MED en Consultation, IDE_Annonce, Agent_Sortie), les distributions sont étalées et asymétriques à droite, ce que la loi Gamma capture naturellement grâce à son paramètre de forme faible (shape \< 2).
 
 ------------------------------------------------------------------------
 
@@ -582,9 +582,9 @@ Son utilisation pour paramétrer la simulation AnyLogic de la Question 3 est jus
 
 Vous testerez différentes combinaisons de scénarios :
 
-- Arrivées réelles, puis arrivées de Poisson homogènes, puis arrivées de Poisson non homogènes
+-   Arrivées réelles, puis arrivées de Poisson homogènes, puis arrivées de Poisson non homogènes
 
-- Temps de service exponentiels, puis loi Gamma
+-   Temps de service exponentiels, puis loi Gamma
 
 Pour les scénarios avec arrivées de Poisson (homogènes et non homogènes), étudiez l'évolution du taux d'occupation et de l'attente en fonction du taux λ d'arrivée, et vérifiez que la saturation du service survient lorsque le taux d'arrivée atteint le taux de service maximal (ρ ≥ 1).
 
@@ -648,6 +648,16 @@ Fonction exponentielle et capacité prio 1 / standard 1
 ![](images/clipboard-115699292.png)
 
 Fonction poisson homogene cap prio 1 et standard 3
+
+![](images/clipboard-151719.png)
+
+Fonction poisson non homogène
+
+![](images/clipboard-191847.png)
+
+Service gamma
+
+![](images/clipboard-194547.png)
 
 ```{r}
 entree = exponential(1.0 / 10.59)

@@ -4,7 +4,7 @@
 	         AnyLogic Project File
 *************************************************
 -->
-<AnyLogicWorkspace WorkspaceVersion="1.9" AnyLogicVersion="8.9.8.202602271015" AlpVersion="8.9.7">
+<AnyLogicWorkspace WorkspaceVersion="1.9" AnyLogicVersion="8.9.7.202512121156" AlpVersion="8.9.7">
 <Model>
 	<Id>1778359516718</Id>
 	<Name><![CDATA[RICCHI_Julia_SOULIE_Chiara_Anylogic]]></Name>
@@ -304,6 +304,36 @@
 						</InitialValue>
 					</Properties>
 				</Variable>
+				<Variable Class="PlainVariable">
+					<Id>1779116733047</Id>
+					<Name><![CDATA[nbMatin]]></Name>
+					<X>220</X><Y>710</Y>
+					<Label><X>10</X><Y>0</Y></Label>
+					<PublicFlag>false</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>true</ShowLabel>
+					<Properties SaveInSnapshot="true" Constant="false" AccessType="public" StaticVariable="false">
+						<Type><![CDATA[int]]></Type>        
+						<InitialValue Class="CodeValue">
+							<Code><![CDATA[0]]></Code>
+						</InitialValue>
+					</Properties>
+				</Variable>
+				<Variable Class="PlainVariable">
+					<Id>1779116747297</Id>
+					<Name><![CDATA[nbAprem]]></Name>
+					<X>220</X><Y>750</Y>
+					<Label><X>10</X><Y>0</Y></Label>
+					<PublicFlag>false</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>true</ShowLabel>
+					<Properties SaveInSnapshot="true" Constant="false" AccessType="public" StaticVariable="false">
+						<Type><![CDATA[int]]></Type>        
+						<InitialValue Class="CodeValue">
+							<Code><![CDATA[0]]></Code>
+						</InitialValue>
+					</Properties>
+				</Variable>
 				<Variable Class="Parameter">
 					<Id>1778957762608</Id>
 					<Name><![CDATA[capPrio]]></Name>
@@ -586,6 +616,28 @@
 					</Points>
 				</Connector>
 			</Connectors>
+			<Functions>
+				<Function AccessType="default" StaticFunction="false">
+					<ReturnModificator>RETURNS_VALUE</ReturnModificator>
+					<ReturnType><![CDATA[double]]></ReturnType>
+					<Id>1779116095565</Id>
+					<Name><![CDATA[interarrivalNH]]></Name>
+					<X>760</X><Y>520</Y>
+					<Label><X>15</X><Y>0</Y></Label>
+					<PublicFlag>false</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>true</ShowLabel>
+					<Body><![CDATA[if(time() < 360){
+
+    return exponential(1.0 / 7.0);
+
+} else {
+
+    return exponential(1.0 / 15.0);
+
+}]]></Body>
+				</Function>
+			</Functions>
 			<AgentLinks>
 				<AgentLink>
 					<Id>1778359516723</Id>
@@ -641,7 +693,7 @@
 						<Parameter>
 							<Name><![CDATA[interarrivalTime]]></Name>
 							<Value Class="CodeUnitValue">
-								<Code><![CDATA[exponential(4.5)]]></Code>
+								<Code><![CDATA[interarrivalNH()]]></Code>
 								<Unit Class="TimeUnits"><![CDATA[MINUTE]]></Unit>
 							</Value>
 						</Parameter>
@@ -694,9 +746,15 @@
 						</Parameter>
 						<Parameter>
 							<Name><![CDATA[limitArrivals]]></Name>
+							<Value Class="CodeValue">
+								<Code><![CDATA[true]]></Code>
+							</Value>
 						</Parameter>
 						<Parameter>
 							<Name><![CDATA[maxArrivals]]></Name>
+							<Value Class="CodeValue">
+								<Code><![CDATA[68]]></Code>
+							</Value>
 						</Parameter>
 						<Parameter>
 							<Name><![CDATA[locationType]]></Name>
@@ -819,21 +877,19 @@
 						<Parameter>
 							<Name><![CDATA[onAtExit]]></Name>
 							<Value Class="CodeValue">
-								<Code><![CDATA[String typePatient = selectFrom(arrivees).list()
-    .get(v_current_id - 1)
-    .get(arrivees.prio)
-    .toString();
-
-agent.prio = typePatient.equals("Prioritaire");
-
-traceln("Patient " + v_current_id 
-    + " - type = " + typePatient 
-    + " - prio = " + agent.prio);
-
-v_current_id++;
+								<Code><![CDATA[agent.prio = randomTrue(19.0 / 68.0);
 
 agent.tArrivee = time();
-nbEntres++;]]></Code>
+
+nbEntres++;
+
+if(time() < 360){
+    nbMatin++;
+} else {
+    nbAprem++;
+}
+
+]]></Code>
 							</Value>
 						</Parameter>
 						<Parameter>
@@ -1073,7 +1129,7 @@ nbEntres++;]]></Code>
 						<Parameter>
 							<Name><![CDATA[delayTime]]></Name>
 							<Value Class="CodeUnitValue">
-								<Code><![CDATA[exponential(1.0 / 3.95)]]></Code>
+								<Code><![CDATA[gamma(24.141, 0.1637)]]></Code>
 								<Unit Class="TimeUnits"><![CDATA[MINUTE]]></Unit>
 							</Value>
 						</Parameter>
@@ -1333,7 +1389,7 @@ dernierDepart = max(dernierDepart, agent.tSortie);]]></Code>
 						<Parameter>
 							<Name><![CDATA[delayTime]]></Name>
 							<Value Class="CodeUnitValue">
-								<Code><![CDATA[exponential(1.0 / 3.99)]]></Code>
+								<Code><![CDATA[gamma(23.699, 0.1682)]]></Code>
 								<Unit Class="TimeUnits"><![CDATA[MINUTE]]></Unit>
 							</Value>
 						</Parameter>
@@ -1741,6 +1797,72 @@ dernierDepart = max(dernierDepart, agent.tSortie);]]></Code>
 					</Font>
 					<Alignment>LEFT</Alignment>
 				</Text>
+				<Text>
+					<Id>1779116881185</Id>
+					<Name><![CDATA[text11]]></Name>
+					<X>416</X><Y>796</Y>
+					<Label><X>0</X><Y>-10</Y></Label>
+					<PublicFlag>true</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>false</ShowLabel>
+					<DrawMode>SHAPE_DRAW_2D</DrawMode>
+					<EmbeddedIcon>false</EmbeddedIcon>
+					<Z>0</Z>
+					<Rotation>0.0</Rotation>
+					<Color>-16777216</Color>
+					<Text><![CDATA["Entrés"+nbEntres]]></Text>
+					<TextCode><![CDATA["Entrés = "+ nbEntres]]></TextCode>
+					<Font>
+						<Name>SansSerif</Name>
+						<Size>10</Size>
+						<Style>0</Style>
+					</Font>
+					<Alignment>LEFT</Alignment>
+				</Text>
+				<Text>
+					<Id>1779116920715</Id>
+					<Name><![CDATA[text12]]></Name>
+					<X>520</X><Y>60</Y>
+					<Label><X>0</X><Y>-10</Y></Label>
+					<PublicFlag>true</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>false</ShowLabel>
+					<DrawMode>SHAPE_DRAW_2D</DrawMode>
+					<EmbeddedIcon>false</EmbeddedIcon>
+					<Z>0</Z>
+					<Rotation>0.0</Rotation>
+					<Color>-16777216</Color>
+					<Text><![CDATA[text]]></Text>
+					<TextCode><![CDATA["Patients matin : " + nbMatin]]></TextCode>
+					<Font>
+						<Name>SansSerif</Name>
+						<Size>10</Size>
+						<Style>0</Style>
+					</Font>
+					<Alignment>LEFT</Alignment>
+				</Text>
+				<Text>
+					<Id>1779116956942</Id>
+					<Name><![CDATA[text13]]></Name>
+					<X>520</X><Y>80</Y>
+					<Label><X>0</X><Y>-10</Y></Label>
+					<PublicFlag>true</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>false</ShowLabel>
+					<DrawMode>SHAPE_DRAW_2D</DrawMode>
+					<EmbeddedIcon>false</EmbeddedIcon>
+					<Z>0</Z>
+					<Rotation>0.0</Rotation>
+					<Color>-16777216</Color>
+					<Text><![CDATA[text]]></Text>
+					<TextCode><![CDATA["Patients après-midi : " + nbAprem]]></TextCode>
+					<Font>
+						<Name>SansSerif</Name>
+						<Size>10</Size>
+						<Style>0</Style>
+					</Font>
+					<Alignment>LEFT</Alignment>
+				</Text>
 			</Presentation>
 
 				</Level>
@@ -2129,7 +2251,6 @@ dernierDepart = max(dernierDepart, agent.tSortie);]]></Code>
 	<Uuid>404652e6-561a-404c-aab2-ab7415f40ef5</Uuid>
 	<Uuid>6fd6cd57-6dfe-4fc6-be0b-c74065351957</Uuid>
 	<Uuid>3325dc48-3ad4-41e3-836f-dfd0e98fe1ed</Uuid>
-	<Uuid>bb27038a-0f3a-48bb-b235-4a44066a14aa</Uuid>
 	<Uuid>3f69ef3d-706e-41a6-8af0-11658c5eef68</Uuid>
 	<Uuid>3f6fe405-e047-4304-91d6-6eee206d1106</Uuid>
 	<Uuid>820d2b51-5b4a-48e7-b0b6-e46418e3c0f2</Uuid>
@@ -2185,7 +2306,5 @@ dernierDepart = max(dernierDepart, agent.tSortie);]]></Code>
 	<Uuid>1737c8c6-b526-4dd8-589e-ee4e205b06f4</Uuid>
 	<Uuid>6a43bef6-8b70-4253-a828-82c3ab399655</Uuid>
 	<Uuid>0a27038a-0f3a-48bb-b235-4a44066a1402</Uuid>
-	<Uuid>0a9ec2c3-5e18-4c0a-a183-fd86d9d9a08b</Uuid>
-	<Uuid>2216cdd0-177c-5678-9e88-dd8b95313334</Uuid>
 </ConvertersApplied>
 </AnyLogicWorkspace>
