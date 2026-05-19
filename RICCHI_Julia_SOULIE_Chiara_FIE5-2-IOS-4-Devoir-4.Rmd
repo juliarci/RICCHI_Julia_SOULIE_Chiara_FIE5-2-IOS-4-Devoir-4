@@ -672,6 +672,61 @@ Avec la même méthodologie, et en vous appuyant sur les circuits patients modé
 
 - En prenant en compte le taux d'occupation obtenu avec cette configuration et les goulets d'étranglement identifiés, proposez un planning légèrement plus robuste (avec 1 ou 2 ressources supplémentaires par tranche) qui réduirait significativement le taux d'occupation et l'attente moyens.
 ```
+```{r}
+library(dplyr)
+library(MASS)
+
+fit_gamma_macro <- function(x) {
+  x <- x[!is.na(x) & x > 0]
+  
+  fit <- suppressWarnings(MASS::fitdistr(x, densfun = "gamma"))
+  
+  shape <- unname(fit$estimate["shape"])
+  rate <- unname(fit$estimate["rate"])
+  scale <- 1 / rate
+  moyenne <- shape / rate
+  
+  data.frame(
+    n = length(x),
+    shape = shape,
+    rate = rate,
+    scale_anylogic = scale,
+    mean_EPT_min = moyenne
+  )
+}
+
+params_gamma_macro <- ops %>%
+  filter(!is.na(ACTIVITY_MACRO), !is.na(EPT_min), EPT_min > 0) %>%
+  group_by(ACTIVITY_MACRO) %>%
+  group_modify(~ fit_gamma_macro(.x$EPT_min)) %>%
+  ungroup() %>%
+  mutate(
+    shape = round(shape, 3),
+    rate = round(rate, 3),
+    scale_anylogic = round(scale_anylogic, 3),
+    mean_EPT_min = round(mean_EPT_min, 2)
+  )
+
+table_gamma_rapport <- params_gamma_macro %>%
+  dplyr::select(
+    ACTIVITY_MACRO,
+    n,
+    shape,
+    rate,
+    scale_anylogic,
+    mean_EPT_min
+  )
+
+print(table_gamma_rapport)
+```
+
+Les durées de service ont été modélisées par des lois Gamma ajustées à partir des durées positives `EPT_min`.
+L’ajustement a été réalisé sous R avec la fonction `fitdistr()` du package `MASS`.
+Cette fonction fournit les paramètres `shape` et `rate`.
+Comme AnyLogic utilise la paramétrisation `gamma(shape, scale)`, nous avons converti `rate` en `scale` par la relation `scale = 1/rate`.
+
+La probabilité `0,868` utilisée dans le bloc `choixApresAccueil` correspond à la transition `Accueil → Consultation` estimée dans la matrice de transition de la chaîne de Markov.
+Elle est obtenue en divisant le nombre de transitions observées de `Accueil` vers `Consultation` par le nombre total de transitions sortant de l’état `Accueil`.
 
 ### Discussion supplémentaire (points complémentaires sur chaque question)
 
