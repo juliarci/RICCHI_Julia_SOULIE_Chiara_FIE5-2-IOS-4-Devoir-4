@@ -14,9 +14,7 @@ editor_options:
 
 ## Introduction
 
-Ce rapport s'inscrit dans le cadre de l'analyse du fonctionnement d'un plateau mutualisé de consultations externes au sein d'un service hospitalier d'urologie.
-L'objectif principal est de construire une modélisation réaliste et simulable du service, en nous appuyant sur des données de traçabilité patient collectées via des étiquettes électroniques de type RFID le 12/11/2015.
-Ces données, fusionnées avec les informations des systèmes d'information administratifs et médicaux, constituent le fichier de log sur lequel repose l'ensemble de notre analyse.
+Ce rapport s'inscrit dans le cadre de l'analyse du fonctionnement d'un plateau mutualisé de consultations externes au sein d'un service hospitalier d'urologie. L'objectif principal est de construire une modélisation réaliste et simulable du service, en nous appuyant sur des données de traçabilité patient collectées via des étiquettes électroniques de type RFID le 12/11/2015. Ces données, fusionnées avec les informations des systèmes d'information administratifs et médicaux, constituent le fichier de log sur lequel repose l'ensemble de notre analyse.
 
 La figure ci-dessous présente le plan du plateau de consultations (voir fichiers PlanConsultations.pdf et ZoomURO.pdf disponibles sur <http://bit.ly/PlansCHUTlse>).
 
@@ -24,21 +22,21 @@ La figure ci-dessous présente le plan du plateau de consultations (voir fichier
 
 Les colonnes du fichier de données sont les suivantes :
 
--   *ID* (Col A) : Identifiant anonymisé du patient
+- *ID* (Col A) : Identifiant anonymisé du patient
 
--   *Timestamp start* (Col B) : Horodatage d'entrée dans une zone ou salle
+- *Timestamp start* (Col B) : Horodatage d'entrée dans une zone ou salle
 
--   *Timestamp end* (Col C) : Horodatage de sortie de la zone ou salle
+- *Timestamp end* (Col C) : Horodatage de sortie de la zone ou salle
 
--   *Activity_MACRO* (Col D) : Catégorie d'activité (ex. Accueil, Consultation…)
+- *Activity_MACRO* (Col D) : Catégorie d'activité (ex. Accueil, Consultation…)
 
--   *Activity_DETAILS* (Col E) : Détail de l'activité et indice de salle (i)
+- *Activity_DETAILS* (Col E) : Détail de l'activité et indice de salle (i)
 
--   *Ress.Humaines* (Col F) : Ressources humaines mobilisées (personnel administratif ou soignant)
+- *Ress.Humaines* (Col F) : Ressources humaines mobilisées (personnel administratif ou soignant)
 
--   *distance parcourues* (Col G) : Distance cumulée parcourue par le patient
+- *distance parcourues* (Col G) : Distance cumulée parcourue par le patient
 
--   *début/fin opX* (Col H à O) : Horodatages de début et de fin pour chaque opération de prise en charge (jusqu'à 4 opérations par activité)
+- *début/fin opX* (Col H à O) : Horodatages de début et de fin pour chaque opération de prise en charge (jusqu'à 4 opérations par activité)
 
 Le tableau de données est consultable ici : <http://bit.ly/logPatients>
 
@@ -46,8 +44,7 @@ Le tableau de données est consultable ici : <http://bit.ly/logPatients>
 
 ## **Devoir 4 — Travail demandé** : Modélisation finale
 
-Ce devoir, réalisé en binôme, est à rendre pour le **14/05/2026** au format Rmd (+ PDF si nécessaire), avec pour titre `NOM_Prenom_FIE5-2-IOS-4-Devoir-4.*`.
-Il fera l'objet d'une soutenance à cette même date.
+Ce devoir, réalisé en binôme, est à rendre pour le **14/05/2026** au format Rmd (+ PDF si nécessaire), avec pour titre `NOM_Prenom_FIE5-2-IOS-4-Devoir-4.*`. Il fera l'objet d'une soutenance à cette même date.
 
 L'objectif de ce dernier devoir est de produire une modélisation simulable complète du service d'urologie, articulée en trois étapes :
 
@@ -70,8 +67,7 @@ devoir3_data_accueil = read_csv2("local_data/devoir3_data_accueil.csv")
 
 ### Question 1) Modélisation des parcours patient par *Process Mining* (/2.5)
 
-L'objectif de cette question est de modéliser les parcours des patients sous la forme d'une **chaîne de Markov**.
-Nous nous concentrons uniquement sur les étapes impliquant une ressource soignante ou administrative, en excluant les déplacements et les temps d'attente passifs.
+L'objectif de cette question est de modéliser les parcours des patients sous la forme d'une **chaîne de Markov**. Nous nous concentrons uniquement sur les étapes impliquant une ressource soignante ou administrative, en excluant les déplacements et les temps d'attente passifs.
 
 Pour illustrer la démarche, prenons l'exemple du patient d'identifiant 10, dont le parcours comporte 9 opérations :
 
@@ -81,8 +77,7 @@ trace_example_final %>%
   filter(ID == 10)
 ```
 
-Afin de simplifier l'analyse, nous regroupons les opérations par **activité macro** et par **type d'acteur**.
-Pour le patient 10, cela donne les temps "stricts" suivants (sans encore tenir compte des temps morts des acteurs) :
+Afin de simplifier l'analyse, nous regroupons les opérations par **activité macro** et par **type d'acteur**. Pour le patient 10, cela donne les temps "stricts" suivants (sans encore tenir compte des temps morts des acteurs) :
 
 ```{r}
 trace_example_final_b <- trace_example_final %>%
@@ -103,20 +98,17 @@ trace_example_final_b %>%
   summarize(time_in_minutes = sum(as.double(DATETIME_END) - as.double(DATETIME_BEGIN)) / 60)
 ```
 
-> **Remarque importante** : ces temps bruts ne suffisent pas pour paramétrer correctement notre modèle.
-> Il est nécessaire de calculer l'***Effective Process Time*** (EPT) de chaque acteur, en intégrant les temps morts survenus entre deux opérations successives d'un même acteur (cf. Devoir 3).
+> **Remarque importante** : ces temps bruts ne suffisent pas pour paramétrer correctement notre modèle. Il est nécessaire de calculer l'***Effective Process Time*** (EPT) de chaque acteur, en intégrant les temps morts survenus entre deux opérations successives d'un même acteur (cf. Devoir 3).
 
 La méthodologie adoptée pour construire le modèle de Markov est la suivante :
 
 **Étape 1 — Modélisation macro des séquences d'activités**
 
-Nous calculons d'abord la fréquence d'occurrence de chaque séquence d'activités macro, en distinguant les patients prioritaires des patients standard.
-Pour le patient 10, la séquence observée est : Accueil → Consultation → Examen → Sortie (4 étapes).
+Nous calculons d'abord la fréquence d'occurrence de chaque séquence d'activités macro, en distinguant les patients prioritaires des patients standard. Pour le patient 10, la séquence observée est : Accueil → Consultation → Examen → Sortie (4 étapes).
 
 **Étape 2 — Modélisation des ressources au sein de chaque activité**
 
-Pour chaque activité macro, nous estimons la probabilité qu'un acteur donné intervienne, puis nous modélisons la durée de son intervention par une **loi gamma**, paramétrée séparément pour les patients prioritaires et standard.
-Le patient 10 mobilise 6 combinaisons activité / acteur distinctes.
+Pour chaque activité macro, nous estimons la probabilité qu'un acteur donné intervienne, puis nous modélisons la durée de son intervention par une **loi gamma**, paramétrée séparément pour les patients prioritaires et standard. Le patient 10 mobilise 6 combinaisons activité / acteur distinctes.
 
 **Étape 3 — Validation par comparaison avec un modèle plus détaillé**
 
@@ -188,8 +180,7 @@ ops %>%
   dplyr::select(ACTIVITY_MACRO, WITH_1, ACTOR_TYPE, DATETIME_BEGIN, DATETIME_END, EPT_min)
 ```
 
-Le calcul de l'EPT consiste à déterminer, pour chaque opération d'un acteur, le temps effectivement consacré au patient en tenant compte de l'éventuelle disponibilité de l'acteur depuis la fin de l'opération précédente.
-Ainsi, si un acteur finit une prise en charge à 9h05 et commence la suivante à 9h10, l'EPT de la seconde opération ne démarre pas à 9h00 (heure d'entrée du patient) mais à 9h05, ce qui évite de sur-estimer les temps de service.
+Le calcul de l'EPT consiste à déterminer, pour chaque opération d'un acteur, le temps effectivement consacré au patient en tenant compte de l'éventuelle disponibilité de l'acteur depuis la fin de l'opération précédente. Ainsi, si un acteur finit une prise en charge à 9h05 et commence la suivante à 9h10, l'EPT de la seconde opération ne démarre pas à 9h00 (heure d'entrée du patient) mais à 9h05, ce qui évite de sur-estimer les temps de service.
 
 ------------------------------------------------------------------------
 
@@ -232,18 +223,15 @@ cat("=== Matrice de transition — Chaîne de Markov ===\n")
 print(round(trans_prob, 3))
 ```
 
-La séquence dominante est **Accueil → Consultation → Sortie**, représentant 44,1 % des patients.
-Il s'agit du parcours "simple" pour les patients dont la consultation ne nécessite pas d'examen complémentaire.
-La deuxième séquence la plus fréquente (**Accueil → Consultation → Examen → Consultation → Sortie**, 22,1 %) correspond au circuit classique d'un patient orienté vers un examen, suivi d'un retour en consultation pour l'interprétation des résultats.
+La séquence dominante est **Accueil → Consultation → Sortie**, représentant 44,1 % des patients. Il s'agit du parcours "simple" pour les patients dont la consultation ne nécessite pas d'examen complémentaire. La deuxième séquence la plus fréquente (**Accueil → Consultation → Examen → Consultation → Sortie**, 22,1 %) correspond au circuit classique d'un patient orienté vers un examen, suivi d'un retour en consultation pour l'interprétation des résultats.
 
 La matrice de transition met en évidence la structure fortement séquentielle du parcours :
 
--   Depuis l'Accueil, la grande majorité des patients se dirigent vers la Consultation (86,8 %), les 13,2 % restants étant orientés directement vers l'Examen.
--   Depuis la Consultation, environ 58 % des patients sortent du service, tandis que 42 % sont envoyés en Examen.
--   Depuis l'Examen, 75,5 % des patients retournent en Consultation (pour l'interprétation des résultats) et 24,5 % quittent directement le service.
+- Depuis l'Accueil, la grande majorité des patients se dirigent vers la Consultation (86,8 %), les 13,2 % restants étant orientés directement vers l'Examen.
+- Depuis la Consultation, environ 58 % des patients sortent du service, tandis que 42 % sont envoyés en Examen.
+- Depuis l'Examen, 75,5 % des patients retournent en Consultation (pour l'interprétation des résultats) et 24,5 % quittent directement le service.
 
-Il n'existe pas de transition de retour vers l'Accueil, ce qui confirme que cet état est un point d'entrée unique.
-La Sortie est un **état absorbant** : aucun patient ne repart vers une autre activité une fois sorti.
+Il n'existe pas de transition de retour vers l'Accueil, ce qui confirme que cet état est un point d'entrée unique. La Sortie est un **état absorbant** : aucun patient ne repart vers une autre activité une fois sorti.
 
 ```{r}
 as.data.frame(trans_prob) %>%
@@ -262,8 +250,7 @@ as.data.frame(trans_prob) %>%
   theme(panel.grid = element_blank())
 ```
 
-La heatmap confirme la lecture de la matrice : les transitions les plus probables (teinte foncée) sont **Accueil → Consultation** et **Examen → Consultation**, ce qui souligne le rôle pivot de la Consultation dans l'organisation du service.
-L'absence de case colorée sur la ligne "Sortie" confirme bien son caractère absorbant.
+La heatmap confirme la lecture de la matrice : les transitions les plus probables (teinte foncée) sont **Accueil → Consultation** et **Examen → Consultation**, ce qui souligne le rôle pivot de la Consultation dans l'organisation du service. L'absence de case colorée sur la ligne "Sortie" confirme bien son caractère absorbant.
 
 ------------------------------------------------------------------------
 
@@ -303,10 +290,10 @@ ggplot(proba_res, aes(x = ACTOR_TYPE, y = prob, fill = PRIO)) +
 
 Les probabilités d'intervention révèlent une structure cohérente avec l'organisation du service :
 
--   À l'**Accueil**, l'Agent_Accueil intervient systématiquement (100 % des passages), ce qui est logique puisqu'il s'agit du point d'entrée obligatoire.
--   En **Consultation**, le MED est sollicité dans 57 à 61 % des passages, l'AS dans 56 à 57 % des cas. L'IDE et l'IDE_Annonce interviennent plus rarement (7 à 18 %), réservés à des actes spécifiques (soins infirmiers, annonces de diagnostic).
--   Les taux d'intervention sont proches entre patients prioritaires et standards en Consultation, ce qui suggère que la priorité influe davantage sur *l'ordre de passage* que sur la *nature des actes* réalisés.
--   En **Examen**, l'IDE est la ressource la plus mobilisée (50 à 73 % des passages), devant l'AS (50 à 58 %) et le MED (38 à 61 %). La variabilité plus marquée chez les patients prioritaires s'explique probablement par le faible effectif de ce sous-groupe dans cette activité (n ≈ 10), rendant les estimations moins robustes.
+- À l'**Accueil**, l'Agent_Accueil intervient systématiquement (100 % des passages), ce qui est logique puisqu'il s'agit du point d'entrée obligatoire.
+- En **Consultation**, le MED est sollicité dans 57 à 61 % des passages, l'AS dans 56 à 57 % des cas. L'IDE et l'IDE_Annonce interviennent plus rarement (7 à 18 %), réservés à des actes spécifiques (soins infirmiers, annonces de diagnostic).
+- Les taux d'intervention sont proches entre patients prioritaires et standards en Consultation, ce qui suggère que la priorité influe davantage sur *l'ordre de passage* que sur la *nature des actes* réalisés.
+- En **Examen**, l'IDE est la ressource la plus mobilisée (50 à 73 % des passages), devant l'AS (50 à 58 %) et le MED (38 à 61 %). La variabilité plus marquée chez les patients prioritaires s'explique probablement par le faible effectif de ce sous-groupe dans cette activité (n ≈ 10), rendant les estimations moins robustes.
 
 ------------------------------------------------------------------------
 
@@ -353,14 +340,13 @@ for (i in seq_len(nrow(combos))) {
 print(resultats_gamma)
 ```
 
-L'ajustement par loi Gamma permet de caractériser la distribution des temps de service pour chaque combinaison activité / acteur / priorité.
-Les résultats montrent des disparités importantes :
+L'ajustement par loi Gamma permet de caractériser la distribution des temps de service pour chaque combinaison activité / acteur / priorité. Les résultats montrent des disparités importantes :
 
--   L'**IDE_Annonce en Consultation** présente de loin le temps de service le plus long (EPT moyen ≈ 38 min), ce qui est attendu : l'annonce d'un diagnostic implique un échange approfondi avec le patient, souvent émotionnellement chargé.
--   Le **MED en Consultation** a des temps moyens entre 13 et 14 min, avec un coefficient de variation (CV) élevé (≈ 0,72–0,75), reflétant la grande variabilité des situations cliniques rencontrées.
--   L'**AS** présente les durées les plus courtes, aussi bien en Consultation (≈ 0,6 min) qu'en Examen (≈ 1,2 min), correspondant à des actes techniques standardisés et rapides.
--   L'**Agent_Accueil** a un CV très faible (≈ 0,20), signe d'un processus bien rodé et peu variable.
--   L'**Agent_Sortie** présente, à l'inverse, un CV élevé (≈ 0,83–0,87), ce qui traduit la variabilité des formalités administratives de sortie selon les cas.
+- L'**IDE_Annonce en Consultation** présente de loin le temps de service le plus long (EPT moyen ≈ 38 min), ce qui est attendu : l'annonce d'un diagnostic implique un échange approfondi avec le patient, souvent émotionnellement chargé.
+- Le **MED en Consultation** a des temps moyens entre 13 et 14 min, avec un coefficient de variation (CV) élevé (≈ 0,72–0,75), reflétant la grande variabilité des situations cliniques rencontrées.
+- L'**AS** présente les durées les plus courtes, aussi bien en Consultation (≈ 0,6 min) qu'en Examen (≈ 1,2 min), correspondant à des actes techniques standardisés et rapides.
+- L'**Agent_Accueil** a un CV très faible (≈ 0,20), signe d'un processus bien rodé et peu variable.
+- L'**Agent_Sortie** présente, à l'inverse, un CV élevé (≈ 0,83–0,87), ce qui traduit la variabilité des formalités administratives de sortie selon les cas.
 
 ```{r}
 # Construire un dataframe avec les données observées + courbe gamma pour chaque combo
@@ -408,8 +394,8 @@ ggplot(plot_data, aes(x = EPT_min)) +
 
 Les histogrammes confirment la pertinence du choix de la loi Gamma :
 
--   Pour les ressources à faible CV (Agent_Accueil, MED en Examen Prioritaire), les distributions sont concentrées et bien symétriques ; la courbe gamma s'ajuste précisément.
--   Pour les ressources à CV élevé (MED en Consultation, IDE_Annonce, Agent_Sortie), les distributions sont étalées et asymétriques à droite, ce que la loi Gamma capture naturellement grâce à son paramètre de forme faible (shape \< 2).
+- Pour les ressources à faible CV (Agent_Accueil, MED en Examen Prioritaire), les distributions sont concentrées et bien symétriques ; la courbe gamma s'ajuste précisément.
+- Pour les ressources à CV élevé (MED en Consultation, IDE_Annonce, Agent_Sortie), les distributions sont étalées et asymétriques à droite, ce que la loi Gamma capture naturellement grâce à son paramètre de forme faible (shape \< 2).
 
 ------------------------------------------------------------------------
 
@@ -468,8 +454,7 @@ comparison %>%
 
 La simulation Monte Carlo sur 1 000 patients virtuels montre que le modèle de Markov reproduit de manière satisfaisante les distributions observées.
 
-La séquence **Accueil → Consultation → Sortie** est légèrement sur-estimée par le modèle (50,9 % simulé vs 44,1 % observé), tandis que le circuit avec aller-retour en Examen (**Accueil → Consultation → Examen → Consultation → Sortie**) est légèrement sous-estimé (16,5 % vs 22,1 %).
-Cet écart est inhérent à l'hypothèse de Markov : chaque transition est supposée indépendante de l'historique du patient, ce qui ne permet pas de capter les corrélations entre étapes successives (par exemple, un patient ayant eu un examen a peut-être une probabilité plus élevée de retourner en consultation qu'un patient n'en ayant pas eu).
+La séquence **Accueil → Consultation → Sortie** est légèrement sur-estimée par le modèle (50,9 % simulé vs 44,1 % observé), tandis que le circuit avec aller-retour en Examen (**Accueil → Consultation → Examen → Consultation → Sortie**) est légèrement sous-estimé (16,5 % vs 22,1 %). Cet écart est inhérent à l'hypothèse de Markov : chaque transition est supposée indépendante de l'historique du patient, ce qui ne permet pas de capter les corrélations entre étapes successives (par exemple, un patient ayant eu un examen a peut-être une probabilité plus élevée de retourner en consultation qu'un patient n'en ayant pas eu).
 
 Malgré ces limites, les ordres de grandeur sont bien respectés et le modèle constitue une base robuste pour paramétrer la simulation AnyLogic de la Question 3.
 
@@ -568,11 +553,9 @@ comp_modeles %>%
 
 La confrontation entre le modèle agrégé (par activité macro) et le modèle détaillé (par salle individuelle) montre que les deux approches donnent des résultats très proches pour la majorité des combinaisons, avec des écarts inférieurs à 5 %.
 
-Les différences les plus significatives concernent le **MED en Consultation Prioritaire** (écart de -20,5 %) et l'**AS en Examen Standard** (+35,5 %), ce qui indique que l'agrégation introduit un biais non négligeable pour ces ressources spécifiques.
-Ces écarts peuvent s'expliquer par des comportements hétérogènes entre salles qui disparaissent lorsqu'on agrège (par exemple, une salle dédiée aux cas lourds qui tire la moyenne vers le haut).
+Les différences les plus significatives concernent le **MED en Consultation Prioritaire** (écart de -20,5 %) et l'**AS en Examen Standard** (+35,5 %), ce qui indique que l'agrégation introduit un biais non négligeable pour ces ressources spécifiques. Ces écarts peuvent s'expliquer par des comportements hétérogènes entre salles qui disparaissent lorsqu'on agrège (par exemple, une salle dédiée aux cas lourds qui tire la moyenne vers le haut).
 
-**Conclusion** : le modèle simplifié offre un bon compromis entre fidélité à la réalité et complexité de mise en œuvre.
-Son utilisation pour paramétrer la simulation AnyLogic de la Question 3 est justifiée, à condition de garder en tête les biais identifiés pour les ressources MED Prioritaire et AS Examen Standard.
+**Conclusion** : le modèle simplifié offre un bon compromis entre fidélité à la réalité et complexité de mise en œuvre. Son utilisation pour paramétrer la simulation AnyLogic de la Question 3 est justifiée, à condition de garder en tête les biais identifiés pour les ressources MED Prioritaire et AS Examen Standard.
 
 ------------------------------------------------------------------------
 
@@ -582,9 +565,9 @@ Son utilisation pour paramétrer la simulation AnyLogic de la Question 3 est jus
 
 Vous testerez différentes combinaisons de scénarios :
 
--   Arrivées réelles, puis arrivées de Poisson homogènes, puis arrivées de Poisson non homogènes
+- Arrivées réelles, puis arrivées de Poisson homogènes, puis arrivées de Poisson non homogènes
 
--   Temps de service exponentiels, puis loi Gamma
+- Temps de service exponentiels, puis loi Gamma
 
 Pour les scénarios avec arrivées de Poisson (homogènes et non homogènes), étudiez l'évolution du taux d'occupation et de l'attente en fonction du taux λ d'arrivée, et vérifiez que la saturation du service survient lorsque le taux d'arrivée atteint le taux de service maximal (ρ ≥ 1).
 
@@ -672,6 +655,38 @@ Avec la même méthodologie, et en vous appuyant sur les circuits patients modé
 
 - En prenant en compte le taux d'occupation obtenu avec cette configuration et les goulets d'étranglement identifiés, proposez un planning légèrement plus robuste (avec 1 ou 2 ressources supplémentaires par tranche) qui réduirait significativement le taux d'occupation et l'attente moyens.
 ```
+
+## Modèle de simulation retenu
+
+Compte tenu de la consigne complémentaire, nous avons retenu un modèle agrégé du service d’urologie. Le parcours patient est représenté par quatre activités macro :
+
+- Accueil
+- Consultation
+- Examen
+- Sortie
+
+Les patients sont générés selon un processus de Poisson non homogène, avec un taux d’arrivée différent le matin et l’après-midi. Les transitions entre activités suivent la chaîne de Markov estimée à la question 1. Les temps passés dans chaque activité sont modélisés par des lois Gamma ajustées à partir des durées observées `EPT_min`.
+
+Dans AnyLogic, chaque activité est modélisée par un bloc `Service` associé à un `ResourcePool`. Les ressources disponibles représentent le nombre d’agents affectés à l’activité. Un événement à 360 minutes permet de passer du planning du matin au planning de l’après-midi.
+
+## Arrivées des patients
+
+Le modèle démarre à 8h00. Les temps sont exprimés en minutes :
+
+- 8h00 correspond à `t = 0`
+- 14h00 correspond à `t = 360`
+- 20h00 correspond à `t = 720`
+
+Les taux d’arrivée utilisés dans AnyLogic sont :
+
+$$\lambda_{matin} = \frac{40}{360}$$
+
+$$\lambda_{après-midi} = \frac{28}{360}$$
+
+Ces taux sont exprimés en patients par minute.
+
+Dans AnyLogic, la fonction utilisée pour les arrivées est :
+
 ```{r}
 library(dplyr)
 library(MASS)
@@ -720,13 +735,263 @@ table_gamma_rapport <- params_gamma_macro %>%
 print(table_gamma_rapport)
 ```
 
-Les durées de service ont été modélisées par des lois Gamma ajustées à partir des durées positives `EPT_min`.
-L’ajustement a été réalisé sous R avec la fonction `fitdistr()` du package `MASS`.
-Cette fonction fournit les paramètres `shape` et `rate`.
-Comme AnyLogic utilise la paramétrisation `gamma(shape, scale)`, nous avons converti `rate` en `scale` par la relation `scale = 1/rate`.
+Les paramètres `shape` et `scale_anylogic` sont ceux utilisés dans les blocs `Service` d’AnyLogic.
 
-La probabilité `0,868` utilisée dans le bloc `choixApresAccueil` correspond à la transition `Accueil → Consultation` estimée dans la matrice de transition de la chaîne de Markov.
-Elle est obtenue en divisant le nombre de transitions observées de `Accueil` vers `Consultation` par le nombre total de transitions sortant de l’état `Accueil`.
+Les durées de service ont été modélisées par des lois Gamma ajustées à partir des durées positives `EPT_min`. L’ajustement a été réalisé sous R avec la fonction `fitdistr()` du package `MASS`. Cette fonction fournit les paramètres `shape` et `rate`. Comme AnyLogic utilise la paramétrisation `gamma(shape, scale)`, nous avons converti `rate` en `scale` par la relation `scale = 1/rate`.
+
+La probabilité `0,868` utilisée dans le bloc `choixApresAccueil` correspond à la transition `Accueil → Consultation` estimée dans la matrice de transition de la chaîne de Markov. Elle est obtenue en divisant le nombre de transitions observées de `Accueil` vers `Consultation` par le nombre total de transitions sortant de l’état `Accueil`.
+
+## Probabilités de transition
+
+Les probabilités de transition utilisées dans AnyLogic proviennent de la matrice de transition estimée à la question 1.
+
+| Transition             | Probabilité |
+|------------------------|------------:|
+| Accueil → Consultation |       0.868 |
+| Accueil → Examen       |       0.132 |
+| Consultation → Examen  |       0.417 |
+| Consultation → Sortie  |       0.583 |
+| Examen → Consultation  |       0.755 |
+| Examen → Sortie        |       0.245 |
+
+Dans AnyLogic, ces probabilités sont utilisées dans trois blocs `SelectOutput`.
+
+## Critère de saturation
+
+Un planning est considéré comme non saturé si tous les patients générés pendant la journée sont sortis du système et si le dernier départ a lieu avant 20h. Dans le modèle, cela correspond aux conditions suivantes :
+
+$$nbEntres = nbSortis$$
+
+et
+
+$$dernierDepart \leq 720$$
+
+Si `nbSortis < nbEntres`, cela signifie que des patients sont encore présents dans le système à la fin de la simulation. Le planning est alors considéré comme saturé.
+
+Par exemple, un scénario donnant 93 entrées et 90 sorties n’est pas acceptable, car 3 patients restent encore dans le système. Ce résultat indique que les ressources du planning testé sont insuffisantes.
+
+![](images/clipboard-2631535942.png)
+
+## Modèle de simulation retenu
+
+Compte tenu de la consigne complémentaire, nous avons retenu un modèle agrégé du service d’urologie. Le parcours patient est représenté par quatre activités macro :
+
+- Accueil
+- Consultation
+- Examen
+- Sortie
+
+Nous n’avons pas retenu un parcours linéaire unique de type `Accueil → Consultation → Examen → Sortie`, car celui-ci imposerait le même chemin à tous les patients. À la place, nous avons conservé un modèle probabiliste basé sur la chaîne de Markov estimée en question 1. Ce modèle permet de représenter plusieurs circuits possibles, notamment :
+
+- `Accueil → Consultation → Sortie`
+- `Accueil → Examen → Sortie`
+- `Accueil → Consultation → Examen → Sortie`
+- `Accueil → Consultation → Examen → Consultation → Sortie`
+
+Dans AnyLogic, chaque activité est modélisée par un bloc `Service` associé à un `ResourcePool`. Les ressources disponibles représentent le nombre d’agents affectés à l’activité. Un événement à 360 minutes permet de passer du planning du matin au planning de l’après-midi.
+
+## Arrivées des patients
+
+Le modèle démarre à 8h00. Les temps sont exprimés en minutes :
+
+- 8h00 correspond à `t = 0`
+- 14h00 correspond à `t = 360`
+- 20h00 correspond à `t = 720`
+
+Les patients sont générés selon un processus de Poisson non homogène, avec un taux différent selon la tranche horaire :
+
+$$\lambda_{matin} = \frac{40}{360}$$
+
+$$\lambda_{après-midi} = \frac{28}{360}$$
+
+Ces taux sont exprimés en patients par minute.
+
+Dans AnyLogic, les arrivées sont implémentées avec des temps inter-arrivées exponentiels. La fonction utilisée dans le bloc `Source` est :
+
+``` java
+time() < 355 ? exponential(lambdaMatin) : (time() < 660 ? exponential(lambdaAprem) : 1.0e9)
+```
+
+Cette formule signifie que les patients arrivent avec le taux du matin jusqu’à environ 14h, puis avec le taux de l’après-midi jusqu’à 19h. Après 19h, le terme `1.0e9` rend la prochaine arrivée pratiquement impossible.
+
+Cette adaptation est nécessaire car la consigne impose que tous les patients aient terminé leur prise en charge avant 20h. Si des patients étaient encore admis jusqu’à 20h, un patient arrivant en fin de journée ne pourrait pas terminer immédiatement son parcours, même avec un nombre très élevé de ressources. Nous avons donc introduit une fermeture des admissions à 19h afin de laisser le temps aux derniers patients de terminer leur prise en charge avant 20h.
+
+## Paramètres des lois Gamma
+
+Les durées de service ont été modélisées par des lois Gamma ajustées à partir des durées positives `EPT_min`. L’ajustement a été réalisé sous R avec la fonction `fitdistr()` du package `MASS`. Cette fonction fournit les paramètres `shape` et `rate`.
+
+Comme AnyLogic utilise la paramétrisation `gamma(shape, scale)`, nous avons converti le paramètre `rate` en `scale` selon la relation :
+
+$$scale = \frac{1}{rate}$$
+
+```{r}
+library(dplyr)
+library(MASS)
+
+fit_gamma_macro <- function(x) {
+  x <- x[!is.na(x) & x > 0]
+  
+  fit <- suppressWarnings(MASS::fitdistr(x, densfun = "gamma"))
+  
+  shape <- unname(fit$estimate["shape"])
+  rate <- unname(fit$estimate["rate"])
+  scale <- 1 / rate
+  moyenne <- shape / rate
+  
+  data.frame(
+    n = length(x),
+    shape = shape,
+    rate = rate,
+    scale_anylogic = scale,
+    mean_EPT_min = moyenne
+  )
+}
+
+params_gamma_macro <- ops %>%
+  filter(!is.na(ACTIVITY_MACRO), !is.na(EPT_min), EPT_min > 0) %>%
+  group_by(ACTIVITY_MACRO) %>%
+  group_modify(~ fit_gamma_macro(.x$EPT_min)) %>%
+  ungroup() %>%
+  mutate(
+    shape = round(shape, 3),
+    rate = round(rate, 3),
+    scale_anylogic = round(scale_anylogic, 3),
+    mean_EPT_min = round(mean_EPT_min, 2)
+  )
+
+table_gamma_rapport <- params_gamma_macro %>%
+  dplyr::select(
+    ACTIVITY_MACRO,
+    n,
+    shape,
+    rate,
+    scale_anylogic,
+    mean_EPT_min
+  )
+
+knitr::kable(table_gamma_rapport)
+```
+
+Les paramètres `shape` et `scale_anylogic` sont ceux utilisés dans les blocs `Service` d’AnyLogic.
+
+## Probabilités de transition
+
+Les probabilités de transition utilisées dans AnyLogic proviennent de la matrice de transition estimée à la question 1.
+
+| Transition             | Probabilité |
+|------------------------|------------:|
+| Accueil → Consultation |       0.868 |
+| Accueil → Examen       |       0.132 |
+| Consultation → Examen  |       0.417 |
+| Consultation → Sortie  |       0.583 |
+| Examen → Consultation  |       0.755 |
+| Examen → Sortie        |       0.245 |
+
+Dans AnyLogic, ces probabilités sont utilisées dans trois blocs `SelectOutput` :
+
+- `choixApresAccueil`
+- `choixApresConsultation`
+- `choixApresExamen`
+
+Le retour `Examen → Consultation` est conservé, car il apparaît dans les circuits patients modélisés à la question 1. Il correspond au cas où un patient revient en consultation après un examen pour l’interprétation des résultats.
+
+## Critère d’acceptabilité du planning
+
+La consigne impose que tous les patients aient terminé leur prise en charge avant 20h. Nous retenons donc un critère strict d’acceptabilité du planning.
+
+Un scénario est considéré comme acceptable si :
+
+$$nbEntres = nbSortis$$
+
+et
+
+$$dernierDepart \leq 720$$
+
+La première condition signifie que tous les patients générés ont terminé leur parcours. La seconde condition signifie que le dernier patient est sorti avant 20h, puisque le modèle commence à 8h et que 20h correspond à `t = 720` minutes.
+
+Un scénario est donc rejeté si au moins un patient reste dans le système, ou si le dernier départ a lieu après 20h.
+
+pour : time() \< 355 ? exponential(lambdaMatin) : (time() \< 660 ? exponential(lambdaAprem) : 1.0e9) et capacités illimitées : 19h56 derniere sortie
+
+pour time() \< 360 ? exponential(lambdaMatin) : (time() \< 660 ? exponential(lambdaAprem) : 1.0e9) et capacités illimitées : 20h03 derniere sortie
+
+## Résultats des scénarios testés
+
+Nous avons testé plusieurs configurations de planning sur les deux tranches horaires `[8h ; 14h]` et `[14h ; 20h]`. Le nombre moyen d’agents est calculé comme la moyenne des effectifs mobilisés sur les deux tranches.
+
+```{r}
+resultats_anylogic <- tibble::tribble(
+  ~Scenario, ~Accueil, ~Consultation, ~Examen, ~Sortie, ~Agents_moyens,
+  ~Entres, ~Sortis, ~Restants, ~Dernier_depart, ~Temps_moyen_systeme,
+  ~Sature, ~Respect_20h, ~Acceptable,
+  
+  "A", "1/1", "1/1", "1/1", "1/1", 4.0,
+  61, 61, 0, "2h48 (J+1)", 256.34,
+  FALSE, FALSE, FALSE,
+  
+  "B", "1/1", "2/1", "1/1", "1/1", 4.5,
+  66, 66, 0, "21h35", 89.50,
+  FALSE, FALSE, FALSE,
+  
+  "C", "1/1", "2/2", "1/1", "1/1", 5.0,
+  79, 79, 0, "19h24", 65.62,
+  FALSE, TRUE, TRUE,
+  
+  "D", "1/1", "2/2", "2/1", "1/1", 5.5,
+  72, 72, 0, "19h22", 37.44,
+  FALSE, TRUE, TRUE,
+  
+  "E", "1/1", "2/2", "2/2", "1/1", 6.0,
+  68, 68, 0, "19h59", 33.94,
+  FALSE, TRUE, TRUE
+)
+
+knitr::kable(resultats_anylogic)
+```
+
+Les scénarios A et B ne sont pas retenus. Même si tous les patients finissent par sortir du système, le dernier départ a lieu après 20h. Ces scénarios ne respectent donc pas la contrainte de fin de prise en charge avant 20h.
+
+Le premier scénario respectant simultanément les deux conditions `nbEntres = nbSortis` et `dernierDepart <= 720` est le scénario C.
+
+Le planning minimal retenu est donc :
+
+| Activité     | Matin | Après-midi |
+|--------------|------:|-----------:|
+| Accueil      |     1 |          1 |
+| Consultation |     2 |          2 |
+| Examen       |     1 |          1 |
+| Sortie       |     1 |          1 |
+
+Le nombre moyen d’agents est donc :
+
+$$1 + 2 + 1 + 1 = 5$$
+
+Ce scénario est retenu comme planning minimal, car les scénarios avec moins d’agents ne permettent pas de respecter l’horaire de fin de prise en charge avant 20h.
+
+## Planning robuste proposé
+
+Le planning minimal retenu est le scénario C. Cependant, le temps moyen passé dans le système reste relativement élevé, avec 65,62 minutes en moyenne. De plus, l’activité Consultation reste le point central du parcours patient : la majorité des patients y est orientée après l’accueil, et certains patients y reviennent après un examen.
+
+Pour proposer un planning légèrement plus robuste, nous retenons le scénario E :
+
+| Activité     | Matin | Après-midi |
+|--------------|------:|-----------:|
+| Accueil      |     1 |          1 |
+| Consultation |     2 |          2 |
+| Examen       |     2 |          2 |
+| Sortie       |     1 |          1 |
+
+Ce planning mobilise 6 agents en moyenne sur la journée, soit une ressource supplémentaire par rapport au planning minimal. Il permet de réduire nettement le temps moyen passé dans le système, qui passe de 65,62 minutes dans le scénario C à 33,94 minutes dans le scénario E.
+
+Le scénario E constitue donc un planning plus robuste : il respecte la contrainte de fin de prise en charge avant 20h, tout en réduisant le temps moyen de passage et en offrant une marge supplémentaire sur l’activité Examen.
+
+## Conclusion de la question 3
+
+Le modèle AnyLogic construit à partir des circuits patients de la question 1 permet de tester différents plannings d’agents sur les deux tranches `[8h ; 14h]` et `[14h ; 20h]`.
+
+Afin de rendre compatible la contrainte de fin de prise en charge avant 20h avec les temps de service observés, nous avons introduit une fermeture des admissions à 19h. Cette hypothèse est nécessaire, car un patient arrivant trop tardivement ne peut pas terminer instantanément son parcours, même en présence de ressources disponibles.
+
+Le planning minimal retenu est le scénario C, avec 5 agents en moyenne sur la journée. Le planning robuste proposé est le scénario E, avec 6 agents en moyenne, car il réduit significativement le temps moyen passé dans le système tout en respectant la contrainte de fin de prise en charge avant 20h.
 
 ### Discussion supplémentaire (points complémentaires sur chaque question)
 
