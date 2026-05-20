@@ -1659,7 +1659,7 @@ dernierDepart = max(dernierDepart, agent.tSortie);]]></Code>
 					<Rotation>0.0</Rotation>
 					<Color>-16777216</Color>
 					<Text><![CDATA[text]]></Text>
-					<TextCode><![CDATA["Saturation = " + ((nbEntres == nbSortis && dernierDepart <= 20 * 60) ? "NON" : "OUI")]]></TextCode>
+					<TextCode><![CDATA["Saturation = " + ((nbEntres == nbSortis && dernierDepart <= 720) ? "NON" : "OUI")]]></TextCode>
 					<Font>
 						<Name>SansSerif</Name>
 						<Size>10</Size>
