@@ -1227,7 +1227,7 @@ poolSortie.set_capacity(capSortieAprem);]]></Action>
 						<Parameter>
 							<Name><![CDATA[interarrivalTime]]></Name>
 							<Value Class="CodeUnitValue">
-								<Code><![CDATA[time() < 360 ? exponential(lambdaMatin) : (time() < 650 ? exponential(lambdaAprem) : 1.0e9)]]></Code>
+								<Code><![CDATA[time() < 355 ? exponential(lambdaMatin) : (time() < 660 ? exponential(lambdaAprem) : 1.0e9)]]></Code>
 								<Unit Class="TimeUnits"><![CDATA[MINUTE]]></Unit>
 							</Value>
 						</Parameter>
